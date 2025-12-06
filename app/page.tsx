@@ -5,6 +5,7 @@ import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Writings from "@/components/sections/Writings";
 import Navbar from "@/components/layout/Navbar";
+import Projects from "@/components/sections/Projects";
 
 // Lazy load heavy 3D components for better performance
 const PrometheusReactor = lazy(() => import("@/components/effects/PrometheusReactor"));
@@ -30,7 +31,9 @@ export default function Home() {
         <div id="writings">
           <Writings />
         </div>
-        {/* Projects and Contact coming next */}
+        <div id="projects">
+          <Projects />
+        </div>
       </main>
     </>
   );
