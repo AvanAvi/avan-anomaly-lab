@@ -1,19 +1,29 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import EMDriveTransition from "@/components/effects/EMDriveTransition";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef, lazy, Suspense } from "react";
+import { useRouter, usePathname } from "next/navigation";
+
+// Lazy load heavy transition components for better performance
+const EMDriveTransition = lazy(() => import("@/components/effects/EMDriveTransition"));
+const PhilosophyTransition = lazy(() => import("@/components/effects/PhilosophyTransition"));
+const ReadingTransition = lazy(() => import("@/components/effects/ReadingTransition"));
+
+type TransitionType = 'science' | 'philosophy' | 'reading';
 
 interface TransitionContextType {
-  startTransition: (destination: string) => void;
+  startTransition: (destination: string, type?: TransitionType) => void;
 }
 
 const TransitionContext = createContext<TransitionContextType | undefined>(undefined);
 
 export function TransitionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [destination, setDestination] = useState<string>("");
+  const [transitionType, setTransitionType] = useState<TransitionType>('science');
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const startPathRef = useRef<string>("");
 
   // Ensure scroll is always enabled on mount (in case it was locked previously)
   useEffect(() => {
@@ -21,35 +31,63 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
     document.body.style.overflow = '';
   }, []);
 
-  const startTransition = (dest: string) => {
+  // Watch for route changes - only unmount transition AFTER route has changed
+  useEffect(() => {
+    if (animationComplete && pathname !== startPathRef.current && pathname === destination) {
+      // Route has changed to destination - safe to unmount transition
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      setIsTransitioning(false);
+      setAnimationComplete(false);
+    }
+  }, [pathname, animationComplete, destination]);
+
+  const startTransition = (dest: string, type: TransitionType = 'science') => {
+    // Store the starting path so we can detect when navigation completes
+    startPathRef.current = pathname;
+    
     // Scroll to top and lock scroll
     window.scrollTo({ top: 0, behavior: 'instant' });
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
 
     setDestination(dest);
+    setTransitionType(type);
+    setAnimationComplete(false);
     setIsTransitioning(true);
   };
 
   const handleTransitionComplete = () => {
-    // Navigate after animation completes
+    // Mark animation as complete and navigate
+    // The overlay will stay visible until useEffect detects the route change
+    setAnimationComplete(true);
     router.push(destination);
+  };
 
-    // Restore scroll after navigation
-    setTimeout(() => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      setIsTransitioning(false);
-    }, 100);
+  // Select the appropriate transition component based on type
+  const renderTransition = () => {
+    const props = { onComplete: handleTransitionComplete };
+    
+    switch (transitionType) {
+      case 'philosophy':
+        return <PhilosophyTransition {...props} />;
+      case 'reading':
+        return <ReadingTransition {...props} />;
+      case 'science':
+      default:
+        return <EMDriveTransition {...props} />;
+    }
   };
 
   return (
     <TransitionContext.Provider value={{ startTransition }}>
       {children}
       {isTransitioning && (
-        <div className="fixed inset-0 z-[9999]">
-          <EMDriveTransition onComplete={handleTransitionComplete} />
-        </div>
+        <Suspense fallback={<div className="fixed inset-0 z-[9999] bg-dark-900" />}>
+          <div className="fixed inset-0 z-[9999] bg-dark-900">
+            {renderTransition()}
+          </div>
+        </Suspense>
       )}
     </TransitionContext.Provider>
   );
