@@ -221,11 +221,8 @@ export default function PhilosophyPage() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-16 text-center">
-          <h1 
+          <h1
             className="mb-4 font-mono text-6xl font-bold text-white md:text-8xl"
-            style={{
-              textShadow: '0 0 40px #ff006e, 0 0 80px #8338ec',
-            }}
           >
             THE ANOMALY INSTITUTE
           </h1>
@@ -234,11 +231,8 @@ export default function PhilosophyPage() {
             Questioning Everything, Answering Nothing
             <span className="text-neon-cyan">"</span>
           </p>
-          <p 
+          <p
             className="mt-6 font-mono text-2xl font-bold text-terminal-amber md:text-3xl"
-            style={{
-              textShadow: '0 0 20px #ffb000',
-            }}
           >
             ⚡ Choose Your Professor ⚡
           </p>
@@ -269,19 +263,16 @@ export default function PhilosophyPage() {
 
                 {/* Door Name Plate */}
                 <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center">
-                  <h3 
-                    className={`mb-3 font-mono text-2xl font-bold text-${phil.color}`}
+                  <h3
+                    className="mb-3 font-mono text-2xl font-bold"
                     style={{
-                      textShadow: `0 0 20px ${phil.glowColor}`,
+                      color: phil.glowColor,
                     }}
                   >
                     {phil.name}
                   </h3>
-                  <p 
+                  <p
                     className="font-mono text-sm font-bold text-white"
-                    style={{
-                      textShadow: `0 0 10px ${phil.glowColor}`,
-                    }}
                   >
                     {phil.title}
                   </p>
@@ -331,19 +322,16 @@ export default function PhilosophyPage() {
               <div className="mb-8 flex items-center gap-6">
                 <span className="text-8xl">{selectedPhil.icon}</span>
                 <div>
-                  <h2 
-                    className={`font-mono text-4xl font-bold text-${selectedPhil.color}`}
+                  <h2
+                    className="font-mono text-4xl font-bold"
                     style={{
-                      textShadow: `0 0 30px ${selectedPhil.glowColor}`,
+                      color: selectedPhil.glowColor,
                     }}
                   >
                     {selectedPhil.name}
                   </h2>
-                  <p 
-                    className="font-mono text-xl font-bold text-white"
-                    style={{
-                      textShadow: `0 0 15px ${selectedPhil.glowColor}`,
-                    }}
+                  <p
+                    className="font-mono text-xl font-bold text-terminal-green"
                   >
                     {selectedPhil.title}
                   </p>
@@ -372,11 +360,7 @@ export default function PhilosophyPage() {
 
               {/* Articles */}
               <div>
-                <h3 className="mb-4 font-mono text-2xl font-bold text-terminal-green"
-                  style={{
-                    textShadow: '0 0 20px #00ff41',
-                  }}
-                >
+                <h3 className="mb-4 font-mono text-2xl font-bold text-terminal-green">
                   📚 Teachings from this School:
                 </h3>
                 <div className="space-y-4">
@@ -388,14 +372,14 @@ export default function PhilosophyPage() {
                       <h4 className="mb-2 font-mono text-xl font-bold text-terminal-green">
                         {article.title}
                       </h4>
-                      <p className="mb-3 font-mono text-sm text-terminal-green/70">
+                      <p className="mb-3 font-mono text-sm text-terminal-green">
                         {article.excerpt}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {article.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="border border-terminal-green/30 bg-terminal-green/5 px-2 py-1 font-mono text-xs text-terminal-green/80"
+                            className="border border-terminal-green/30 bg-terminal-green/5 px-2 py-1 font-mono text-xs text-terminal-green"
                           >
                             #{tag}
                           </span>

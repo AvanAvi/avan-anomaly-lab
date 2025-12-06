@@ -310,8 +310,8 @@ export default function EMDriveTransition({ onComplete }: EMDriveTransitionProps
             </h1>
 
             {stage >= 2 && (
-              <p className="font-mono text-lg text-terminal-amber/80 animate-pulse">
-                Newton's 3rd Law: BROKEN 
+              <p className="font-mono text-lg text-terminal-amber animate-pulse">
+                Newton's 3rd Law: BROKEN
               </p>
             )}
           </div>

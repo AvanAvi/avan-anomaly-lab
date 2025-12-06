@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useInView } from "framer-motion";
-import EMDriveTransition from "@/components/effects/EMDriveTransition";
-import PhilosophyTransition from "@/components/effects/PhilosophyTransition";
-import ReadingTransition from "@/components/effects/ReadingTransition";
+
+// Lazy load heavy transition components for better performance
+const EMDriveTransition = lazy(() => import("@/components/effects/EMDriveTransition"));
+const PhilosophyTransition = lazy(() => import("@/components/effects/PhilosophyTransition"));
+const ReadingTransition = lazy(() => import("@/components/effects/ReadingTransition"));
 
 export default function Writings() {
   const ref = useRef(null);
@@ -64,7 +66,7 @@ export default function Writings() {
             <h1 className="font-mono text-4xl font-bold text-terminal-green md:text-6xl">
               What I Create
             </h1>
-            <p className="mt-4 font-mono text-base text-terminal-green/70">
+            <p className="mt-4 font-mono text-base text-terminal-green">
               // Words, thoughts, and occasionally coherent sentences
             </p>
           </div>
@@ -97,14 +99,14 @@ export default function Writings() {
                 </h3>
 
                 {/* Description */}
-                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green/80">
+                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green">
                   <p>
                     I write about the things that make computers do computer things.
                   </p>
-                  <p className="text-neon-cyan/80">
+                  <p className="text-neon-cyan">
                     TDD, CI/CD, nuclear safety systems, Java sorcery, breaking things securely (pen testing), and why Docker containers are basically digital Tupperware.
                   </p>
-                  <p className="italic text-terminal-green/60">
+                  <p className="italic text-terminal-green">
                     "If it compiles, ship it." — Ancient Developer Proverb
                   </p>
                 </div>
@@ -116,7 +118,7 @@ export default function Writings() {
                     {["Spring Boot", "Security", "CI/CD", "Testing", "Nuclear Tech"].map((topic) => (
                       <span
                         key={topic}
-                        className="border border-neon-cyan/30 bg-neon-cyan/5 px-2 py-1 font-mono text-xs text-neon-cyan/80"
+                        className="border border-neon-cyan/30 bg-neon-cyan/5 px-2 py-1 font-mono text-xs text-neon-cyan"
                       >
                         {topic}
                       </span>
@@ -174,14 +176,14 @@ export default function Writings() {
                 </h3>
 
                 {/* Description */}
-                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green/80">
+                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green">
                   <p>
                     Where I pretend to understand existence while my coffee gets cold.
                   </p>
-                  <p className="text-neon-pink/80">
+                  <p className="text-neon-pink">
                     Questions about consciousness, free will, the ethics of AI, why we build things that might replace us, and whether Schrödinger's cat filed a workplace complaint.
                   </p>
-                  <p className="italic text-terminal-green/60">
+                  <p className="italic text-terminal-green">
                     "I think, therefore I debug." — Probably Descartes
                   </p>
                 </div>
@@ -193,7 +195,7 @@ export default function Writings() {
                     {["Existential Code", "AI Ethics", "Free Will.exe", "Meaning++", "¯\\_(ツ)_/¯"].map((topic) => (
                       <span
                         key={topic}
-                        className="border border-neon-pink/30 bg-neon-pink/5 px-2 py-1 font-mono text-xs text-neon-pink/80"
+                        className="border border-neon-pink/30 bg-neon-pink/5 px-2 py-1 font-mono text-xs text-neon-pink"
                       >
                         {topic}
                       </span>
@@ -239,14 +241,14 @@ export default function Writings() {
                 </h3>
 
                 {/* Description */}
-                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green/80">
+                <div className="mb-6 space-y-3 font-mono text-sm leading-relaxed text-terminal-green">
                   <p>
                     Books I'm reading, have read, or pretend to have read at parties.
                   </p>
-                  <p className="text-terminal-amber/80">
+                  <p className="text-terminal-amber">
                     Sci-fi that predicted our dystopia, philosophy that explains why we're confused, tech books that become obsolete before I finish them, and occasionally something that isn't depressing.
                   </p>
-                  <p className="italic text-terminal-green/60">
+                  <p className="italic text-terminal-green">
                     "So many books, so little RAM." — Every developer ever
                   </p>
                 </div>
@@ -258,7 +260,7 @@ export default function Writings() {
                     {["Sci-Fi", "Philosophy", "Tech", "Dystopia", "Essays"].map((topic) => (
                       <span
                         key={topic}
-                        className="border border-terminal-amber/30 bg-terminal-amber/5 px-2 py-1 font-mono text-xs text-terminal-amber/80"
+                        className="border border-terminal-amber/30 bg-terminal-amber/5 px-2 py-1 font-mono text-xs text-terminal-amber"
                       >
                         {topic}
                       </span>
@@ -302,13 +304,13 @@ export default function Writings() {
             }`}
           >
             <div className="border border-terminal-green/30 bg-dark-800/30 p-8 text-center backdrop-blur-sm">
-              <p className="font-mono text-lg leading-relaxed text-terminal-green/90">
+              <p className="font-mono text-lg leading-relaxed text-terminal-green">
                 <span className="text-neon-cyan">"</span>
                 I write to understand what I think. I code to understand what I write.
                 I read to forget I'm doing both.
                 <span className="text-neon-cyan">"</span>
               </p>
-              <p className="mt-4 font-mono text-sm text-terminal-green/60">
+              <p className="mt-4 font-mono text-sm text-terminal-green">
                 — Avan, probably around 3 AM
               </p>
             </div>
@@ -322,23 +324,29 @@ export default function Writings() {
 
       {/* Science Transition */}
       {showScienceTransition && (
-        <div className="fixed inset-0 z-[200]">
-          <EMDriveTransition onComplete={handleScienceTransitionComplete} />
-        </div>
+        <Suspense fallback={<div className="fixed inset-0 z-[200] bg-dark-900" />}>
+          <div className="fixed inset-0 z-[200]">
+            <EMDriveTransition onComplete={handleScienceTransitionComplete} />
+          </div>
+        </Suspense>
       )}
 
       {/* Philosophy Transition */}
       {showPhilosophyTransition && (
-        <div className="fixed inset-0 z-[200]">
-          <PhilosophyTransition onComplete={handlePhilosophyTransitionComplete} />
-        </div>
+        <Suspense fallback={<div className="fixed inset-0 z-[200] bg-dark-900" />}>
+          <div className="fixed inset-0 z-[200]">
+            <PhilosophyTransition onComplete={handlePhilosophyTransitionComplete} />
+          </div>
+        </Suspense>
       )}
 
       {/* Reading Transition */}
       {showReadingTransition && (
-        <div className="fixed inset-0 z-[200]">
-          <ReadingTransition onComplete={handleReadingTransitionComplete} />
-        </div>
+        <Suspense fallback={<div className="fixed inset-0 z-[200] bg-dark-900" />}>
+          <div className="fixed inset-0 z-[200]">
+            <ReadingTransition onComplete={handleReadingTransitionComplete} />
+          </div>
+        </Suspense>
       )}
     </>
   );
