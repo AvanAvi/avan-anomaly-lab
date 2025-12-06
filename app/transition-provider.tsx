@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import EMDriveTransition from "@/components/effects/EMDriveTransition";
 
@@ -15,6 +15,12 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [destination, setDestination] = useState<string>("");
 
+  // Ensure scroll is always enabled on mount (in case it was locked previously)
+  useEffect(() => {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+  }, []);
+
   const startTransition = (dest: string) => {
     // Scroll to top and lock scroll
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -28,6 +34,13 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
   const handleTransitionComplete = () => {
     // Navigate after animation completes
     router.push(destination);
+
+    // Restore scroll after navigation
+    setTimeout(() => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      setIsTransitioning(false);
+    }, 100);
   };
 
   return (
