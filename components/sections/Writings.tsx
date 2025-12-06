@@ -38,15 +38,15 @@ export default function Writings() {
   };
 
   const handleScienceTransitionComplete = () => {
-    window.location.href = "/science";
+    router.push("/science");
   };
 
   const handlePhilosophyTransitionComplete = () => {
-    window.location.href = "/philosophy";
+    router.push("/philosophy");
   };
 
   const handleReadingTransitionComplete = () => {
-    window.location.href = "/reading";
+    router.push("/reading");
   };
 
   return (
