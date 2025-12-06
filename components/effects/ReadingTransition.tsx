@@ -15,7 +15,6 @@ function FlyingBooks({ stage }: { stage: number }) {
     for (let i = 0; i < particleCount; i++) {
       const i3 = i * 3;
       
-      // Start from all corners/edges
       const angle = (i / particleCount) * Math.PI * 2;
       const radius = 20 + Math.random() * 10;
       
@@ -34,19 +33,15 @@ function FlyingBooks({ stage }: { stage: number }) {
       for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
         
-        // Spiral inward toward center
         const currentRadius = Math.sqrt(positions[i3] ** 2 + positions[i3 + 2] ** 2);
         const angle = Math.atan2(positions[i3 + 2], positions[i3]);
-        const newRadius = currentRadius * 0.97; // Pull inward
+        const newRadius = currentRadius * 0.97;
         const spiralAngle = angle + (stage >= 2 ? 0.05 : 0.02);
         
         positions[i3] = Math.cos(spiralAngle) * newRadius;
         positions[i3 + 2] = Math.sin(spiralAngle) * newRadius;
-        
-        // Gentle floating
         positions[i3 + 1] += Math.sin(time * 2 + i) * 0.02;
         
-        // Reset if too close to center
         if (currentRadius < 2) {
           const resetAngle = (i / particleCount) * Math.PI * 2;
           const resetRadius = 20 + Math.random() * 10;
@@ -56,8 +51,6 @@ function FlyingBooks({ stage }: { stage: number }) {
       }
       
       booksRef.current.geometry.attributes.position.needsUpdate = true;
-      
-      // Rotation
       booksRef.current.rotation.y = time * 0.3;
     }
   });
@@ -84,7 +77,6 @@ function FlyingBooks({ stage }: { stage: number }) {
   );
 }
 
-// Portal/Vortex in center
 function BookPortal({ stage }: { stage: number }) {
   const portalRef = useRef<THREE.Group>(null);
 
@@ -92,7 +84,6 @@ function BookPortal({ stage }: { stage: number }) {
     if (portalRef.current) {
       portalRef.current.rotation.z = state.clock.getElapsedTime() * 2;
       
-      // Grow portal as stages progress
       const targetScale = stage >= 3 ? 4 : stage >= 2 ? 2.5 : 1.5;
       portalRef.current.scale.x += (targetScale - portalRef.current.scale.x) * 0.05;
       portalRef.current.scale.y += (targetScale - portalRef.current.scale.y) * 0.05;
@@ -118,7 +109,6 @@ function BookPortal({ stage }: { stage: number }) {
   );
 }
 
-// Pages flipping effect
 function FlippingPages({ stage }: { stage: number }) {
   const pagesRef = useRef<THREE.Group>(null);
 
@@ -187,7 +177,7 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
       {/* Warm background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-dark-900 via-amber-900/20 to-dark-900" />
       
-      {/* 3D Scene */}
+      {/* 3D Scene - FIXED POSITIONING */}
       <div className="absolute inset-0">
         <Canvas camera={{ position: [0, 0, 10], fov: 75 }}>
           <color attach="background" args={["#0a0e27"]} />
@@ -229,60 +219,21 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
       <div className="relative z-10 flex h-full items-center justify-center px-8">
         <div className="max-w-4xl text-center bg-dark-900/70 backdrop-blur-sm rounded-lg p-8 border border-terminal-amber/30">
 
-          {/* Main Message */}
-          <h1
-            className="font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl text-terminal-amber"
-          >
+          <h1 className="font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl text-terminal-amber">
             {stage === 0 && "ACCESSING THE VAULT..."}
             {stage === 1 && "LOADING LIBRARY PORTAL..."}
             {stage === 2 && "BOOKS CONVERGING..."}
             {stage === 3 && "📚 INFINITE LIBRARY 📚"}
           </h1>
 
-          {/* Sub-messages */}
-          {stage >= 1 && stage < 3 && (
-            <div className="space-y-4 font-mono text-lg">
-              <p className="text-amber-400 animate-pulse">
-                ∞ So Many Books, So Little Time ∞
-              </p>
-              {stage >= 2 && (
-                <>
-                  <p className="text-yellow-400 animate-pulse">
-                    ∞ Knowledge is Power (Consumption Optional) ∞
-                  </p>
-                  <p className="text-orange-400 animate-pulse">
-                    ∞ Unread Books: A Love Story ∞
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Final Stage */}
-          {stage >= 3 && (
-            <div className="space-y-6">
-              <p className="font-mono text-3xl text-white animate-pulse">
-                WELCOME TO AVAN'S READING VAULT
-              </p>
-              <p className="font-mono text-xl text-terminal-green">
-                "So Many Books, So Little RAM"
-              </p>
-            </div>
-          )}
-
-          {/* Status */}
-          <div className="mt-12 font-mono text-xs text-terminal-amber">
-            <p>BOOKS LOADED: {stage === 0 ? '0' : stage === 1 ? '47' : stage === 2 ? '156' : '∞'}</p>
-            <p>WISHLIST SIZE: {stage >= 2 ? 'GROWING' : 'STATIC'}</p>
-            <p>TIME TO READ ALL: {stage >= 3 ? '3 LIFETIMES' : 'CALCULATING...'}</p>
-          </div>
+          <p className="font-mono text-xl text-terminal-green">
+            {stage === 0 && "Initializing knowledge database..."}
+            {stage === 1 && "Summoning literary particles..."}
+            {stage === 2 && "Assembling infinite wisdom..."}
+            {stage === 3 && "Welcome to the endless shelves."}
+          </p>
         </div>
       </div>
-
-      {/* Warm glow overlay */}
-      {stage >= 2 && (
-        <div className="absolute inset-0 bg-gradient-radial from-amber-500/10 via-transparent to-transparent animate-pulse pointer-events-none" />
-      )}
     </div>
   );
 }

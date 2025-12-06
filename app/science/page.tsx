@@ -3,38 +3,31 @@
 import Link from "next/link";
 
 export default function SciencePage() {
-  const writings = [
+  // Sample articles
+  const articles = [
     {
       id: 1,
-      title: "Test-Driven Development: A Love Story",
+      title: "The EM Drive Paradox: When Physics Gets Weird",
+      excerpt: "Exploring impossible propulsion systems and why they shouldn't work (but maybe do).",
       date: "2024-11-15",
-      excerpt: "How I learned to stop worrying and love the red-green-refactor cycle. Featuring 100% code coverage and questionable life choices.",
-      tags: ["TDD", "Spring Boot", "Testing"],
       readTime: "8 min",
+      tags: ["Physics", "Propulsion", "Anomalies"],
     },
     {
       id: 2,
-      title: "Docker: Digital Tupperware for Your Code",
+      title: "Quantum Computing: Hype vs. Reality",
+      excerpt: "Separating the science from the sci-fi in quantum tech.",
       date: "2024-10-22",
-      excerpt: "Containers, images, and why your app works on your machine but nowhere else. A tale as old as time.",
-      tags: ["Docker", "DevOps", "Containers"],
-      readTime: "6 min",
+      readTime: "12 min",
+      tags: ["Quantum", "Computing", "Future"],
     },
     {
       id: 3,
-      title: "CI/CD for Nuclear Safety: No Pressure",
+      title: "AI Alignment: The Philosophy Problem",
+      excerpt: "Why making AI 'good' is harder than you think.",
       date: "2024-09-30",
-      excerpt: "Building continuous integration pipelines for safety-critical systems. What could possibly go wrong?",
-      tags: ["CI/CD", "Nuclear", "Safety"],
-      readTime: "12 min",
-    },
-    {
-      id: 4,
-      title: "Breaking Things Securely: A Pen Tester's Guide",
-      date: "2024-08-18",
-      excerpt: "Ethical hacking, vulnerability assessments, and why 'password123' is still too common in 2024.",
-      tags: ["Security", "Penetration Testing", "Hacking"],
-      readTime: "10 min",
+      readTime: "15 min",
+      tags: ["AI", "Ethics", "Philosophy"],
     },
   ];
 
@@ -46,26 +39,28 @@ export default function SciencePage() {
         className="group mb-12 inline-flex items-center gap-2 border border-neon-cyan/30 bg-dark-800/50 px-4 py-2 font-mono text-neon-cyan transition-all hover:border-neon-cyan hover:bg-neon-cyan/10"
       >
         <span className="transition-transform group-hover:-translate-x-1">←</span>
-        BACK TO LAB
+        RETURN TO LAB
       </Link>
 
       {/* Header */}
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-16 border-l-4 border-neon-cyan pl-6">
-          <h2 className="mb-2 font-mono text-sm text-neon-cyan/60">
-            {">"} SCIENCE_&_TECH_WRITINGS
-          </h2>
-          <h1 className="font-mono text-5xl font-bold text-neon-cyan md:text-7xl">
-            Tech Chronicles
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-16 text-center">
+          <h1
+            className="mb-4 font-mono text-6xl font-bold text-neon-cyan md:text-8xl"
+            style={{
+              textShadow: '0 0 40px #00d9ff, 0 0 80px #00d9ff',
+            }}
+          >
+            SCIENCE & TECH
           </h1>
-          <p className="mt-4 font-mono text-lg text-terminal-green/70">
-            // Making computers do computer things, one bug at a time
+          <p className="font-mono text-xl text-terminal-green md:text-2xl">
+            Where curiosity meets questionable experiments
           </p>
         </div>
 
-        {/* Writings List */}
+        {/* Articles Grid */}
         <div className="space-y-8">
-          {writings.map((article, index) => (
+          {articles.map((article, index) => (
             <article
               key={article.id}
               className="group relative border-2 border-neon-cyan/30 bg-dark-800/50 p-6 transition-all hover:border-neon-cyan hover:shadow-lg hover:shadow-neon-cyan/20"

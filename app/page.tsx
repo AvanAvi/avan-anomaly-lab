@@ -14,9 +14,13 @@ export default function Home() {
     <>
       <Navbar />
       <main className="min-h-screen scroll-smooth">
-        <Suspense fallback={<div className="fixed inset-0 bg-dark-900" />}>
-          <PrometheusReactor />
-        </Suspense>
+        {/* Fixed positioning prevents layout shifts during loading */}
+        <div className="fixed inset-0 -z-10">
+          <Suspense fallback={null}>
+            <PrometheusReactor />
+          </Suspense>
+        </div>
+        
         <div id="home">
           <Hero />
         </div>
