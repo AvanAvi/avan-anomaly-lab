@@ -176,11 +176,11 @@ export default function PhilosophyTransition({ onComplete }: PhilosophyTransitio
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setStage(1), 2500);
-    const timer2 = setTimeout(() => setStage(2), 5000);
-    const timer3 = setTimeout(() => setStage(3), 6500);
-    const timer4 = setTimeout(() => setFadeOut(true), 12000);
-    const timer5 = setTimeout(() => onComplete(), 12500);
+    const timer1 = setTimeout(() => setStage(1), 1500);
+    const timer2 = setTimeout(() => setStage(2), 3500);
+    const timer3 = setTimeout(() => setStage(3), 5000);
+    const timer4 = setTimeout(() => setFadeOut(true), 7500);
+    const timer5 = setTimeout(() => onComplete(), 8000);
 
     return () => {
       clearTimeout(timer1);
@@ -226,16 +226,8 @@ export default function PhilosophyTransition({ onComplete }: PhilosophyTransitio
         <div className="max-w-4xl text-center">
           
           {/* Main Message */}
-          <h1 
-            className={`font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl ${
-              stage >= 2 ? 'text-neon-pink' : 'text-neon-pink/80'
-            }`}
-            style={{
-              textShadow: stage >= 3 
-                ? '0 0 40px #ff006e, 0 0 80px #ff006e, 0 0 120px #8338ec' 
-                : '0 0 20px #ff006e',
-              animation: stage >= 3 ? 'glitch 0.5s infinite' : 'none',
-            }}
+          <h1
+            className="font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl text-neon-pink bg-black/50 backdrop-blur-sm rounded-lg p-6 border border-neon-pink/30"
           >
             {stage === 0 && "FALLING INTO THE VOID..."}
             {stage === 1 && "DESCENDING INTO DOUBT..."}
@@ -245,16 +237,16 @@ export default function PhilosophyTransition({ onComplete }: PhilosophyTransitio
 
           {/* Sub-messages */}
           {stage >= 1 && stage < 3 && (
-            <div className="space-y-4 font-mono text-lg">
-              <p className="text-neon-pink/70 animate-pulse">
+            <div className="space-y-4 font-mono text-lg bg-black/50 backdrop-blur-sm rounded-lg p-4">
+              <p className="text-neon-pink animate-pulse">
                 ∞ The abyss stares back, and it looks bored ∞
               </p>
               {stage >= 2 && (
                 <>
-                  <p className="text-purple-400/70 animate-pulse">
+                  <p className="text-purple-400 animate-pulse">
                     ∞ Free will is just a bug we call a feature ∞
                   </p>
-                  <p className="text-neon-pink/50 animate-pulse">
+                  <p className="text-neon-pink animate-pulse">
                     ∞ We're all just NPCs in someone's simulation ∞
                   </p>
                 </>

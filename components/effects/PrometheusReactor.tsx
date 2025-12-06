@@ -131,17 +131,17 @@ function LightningBolt({ position }: { position: [number, number, number] }) {
   );
 }
 
-// Energy Particles - Spread across entire scene
+// Energy Particles - Reduced count for better performance
 function EnergyParticles() {
   const particlesRef = useRef<THREE.Points>(null);
 
   const [positions, colors] = useMemo(() => {
-    const positions = new Float32Array(3000 * 3);
-    const colors = new Float32Array(3000 * 3);
+    const positions = new Float32Array(1500 * 3);
+    const colors = new Float32Array(1500 * 3);
 
-    for (let i = 0; i < 3000; i++) {
+    for (let i = 0; i < 1500; i++) {
       const i3 = i * 3;
-      
+
       positions[i3] = (Math.random() - 0.5) * 30;
       positions[i3 + 1] = (Math.random() - 0.5) * 20;
       positions[i3 + 2] = (Math.random() - 0.5) * 20 - 5;

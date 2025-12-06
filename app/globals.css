@@ -6,12 +6,19 @@
   * {
     @apply border-terminal-green/20;
   }
-  
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply font-mono;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
-  /* CRT Screen Effect */
+
+  /* CRT Screen Effect - Reduce GPU usage */
   body::before {
     content: "";
     position: fixed;
@@ -27,6 +34,7 @@
     z-index: 9999;
     pointer-events: none;
     animation: scan 8s linear infinite;
+    will-change: transform;
   }
   
   /* Subtle screen glow */

@@ -51,7 +51,7 @@ export default function Hero() {
         </h1>
 
         {/* Subtitle */}
-        <div className="mb-8 space-y-2 font-mono text-lg text-terminal-green/80 md:text-xl">
+        <div className="mb-8 space-y-2 font-mono text-lg text-terminal-green md:text-xl">
           <p className="animate-pulse">
             {">"} [████░░░░] Engineer | [████████░] Philosopher | [████░░░░] ¯\_(ツ)_/¯
           </p>

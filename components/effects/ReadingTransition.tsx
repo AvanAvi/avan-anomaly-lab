@@ -166,11 +166,11 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setStage(1), 1500);
-    const timer2 = setTimeout(() => setStage(2), 4000);
-    const timer3 = setTimeout(() => setStage(3), 6500);
-    const timer4 = setTimeout(() => setFadeOut(true), 10000);
-    const timer5 = setTimeout(() => onComplete(), 10500);
+    const timer1 = setTimeout(() => setStage(1), 1000);
+    const timer2 = setTimeout(() => setStage(2), 2500);
+    const timer3 = setTimeout(() => setStage(3), 4500);
+    const timer4 = setTimeout(() => setFadeOut(true), 6500);
+    const timer5 = setTimeout(() => onComplete(), 7000);
 
     return () => {
       clearTimeout(timer1);
@@ -227,18 +227,11 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
 
       {/* Text Overlay */}
       <div className="relative z-10 flex h-full items-center justify-center px-8">
-        <div className="max-w-4xl text-center">
-          
+        <div className="max-w-4xl text-center bg-dark-900/70 backdrop-blur-sm rounded-lg p-8 border border-terminal-amber/30">
+
           {/* Main Message */}
-          <h1 
-            className={`font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl ${
-              stage >= 2 ? 'text-terminal-amber' : 'text-terminal-amber/80'
-            }`}
-            style={{
-              textShadow: stage >= 3 
-                ? '0 0 40px #ffb000, 0 0 80px #ff8800' 
-                : '0 0 20px #ffb000',
-            }}
+          <h1
+            className="font-mono text-5xl font-bold mb-8 transition-all duration-500 md:text-7xl text-terminal-amber"
           >
             {stage === 0 && "ACCESSING THE VAULT..."}
             {stage === 1 && "LOADING LIBRARY PORTAL..."}
@@ -249,15 +242,15 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
           {/* Sub-messages */}
           {stage >= 1 && stage < 3 && (
             <div className="space-y-4 font-mono text-lg">
-              <p className="text-amber-400/80 animate-pulse">
+              <p className="text-amber-400 animate-pulse">
                 ∞ So Many Books, So Little Time ∞
               </p>
               {stage >= 2 && (
                 <>
-                  <p className="text-yellow-400/70 animate-pulse">
+                  <p className="text-yellow-400 animate-pulse">
                     ∞ Knowledge is Power (Consumption Optional) ∞
                   </p>
-                  <p className="text-orange-400/70 animate-pulse">
+                  <p className="text-orange-400 animate-pulse">
                     ∞ Unread Books: A Love Story ∞
                   </p>
                 </>
@@ -271,14 +264,14 @@ export default function ReadingTransition({ onComplete }: ReadingTransitionProps
               <p className="font-mono text-3xl text-white animate-pulse">
                 WELCOME TO AVAN'S READING VAULT
               </p>
-              <p className="font-mono text-xl text-terminal-green/80">
+              <p className="font-mono text-xl text-terminal-green">
                 "So Many Books, So Little RAM"
               </p>
             </div>
           )}
 
           {/* Status */}
-          <div className="mt-12 font-mono text-xs text-terminal-amber/40">
+          <div className="mt-12 font-mono text-xs text-terminal-amber">
             <p>BOOKS LOADED: {stage === 0 ? '0' : stage === 1 ? '47' : stage === 2 ? '156' : '∞'}</p>
             <p>WISHLIST SIZE: {stage >= 2 ? 'GROWING' : 'STATIC'}</p>
             <p>TIME TO READ ALL: {stage >= 3 ? '3 LIFETIMES' : 'CALCULATING...'}</p>

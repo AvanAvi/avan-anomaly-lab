@@ -35,28 +35,28 @@ export default function About() {
               <div className="absolute -left-2 -top-2 h-4 w-4 border-l-2 border-t-2 border-terminal-green" />
               <div className="absolute -right-2 -top-2 h-4 w-4 border-r-2 border-t-2 border-terminal-green" />
               
-              <p className="font-mono text-lg leading-relaxed text-terminal-green/90">
-                They call me <span className="text-terminal-amber">Dr.</span> — 
+              <p className="font-mono text-lg leading-relaxed text-terminal-green">
+                They call me <span className="text-terminal-amber">Dr.</span> —
                 though as Queen once said,{" "}
                 <span className="italic text-neon-pink">"nothing really matters."</span>
               </p>
-              
-              <p className="mt-4 font-mono text-base leading-relaxed text-terminal-green/80">
+
+              <p className="mt-4 font-mono text-base leading-relaxed text-terminal-green">
                 Just titles. Prefixes. Symbols we attach to make sense of the chaos.
               </p>
             </div>
 
             <div className="space-y-4 border-l-2 border-terminal-green/30 pl-6">
-              <p className="font-mono text-base leading-relaxed text-terminal-green/80">
+              <p className="font-mono text-base leading-relaxed text-terminal-green">
                 I'm an engineer who thinks too much.
                 <br />A philosopher who codes.
                 <br />A scientist (maybe) who questions most of it, if not all of it—
                 <br />maybe some of it—depends on how drunk I am.
                 <br />
-                <span className="text-xs text-terminal-green/50">(Don't tell my mom I've started drinking again, hehe)</span>
+                <span className="text-xs text-terminal-green/70">(Don't tell my mom I've started drinking again, hehe)</span>
               </p>
 
-              <p className="font-mono text-base leading-relaxed text-terminal-green/80">
+              <p className="font-mono text-base leading-relaxed text-terminal-green">
                 Some call it <span className="text-neon-cyan">Computer Science</span>.
                 I call it the art of teaching sand to think.
               </p>
@@ -78,7 +78,7 @@ export default function About() {
               <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
                 Technology in Computer Science & Engineering
               </h3>
-              <p className="font-mono text-sm leading-relaxed text-terminal-green/70">
+              <p className="font-mono text-sm leading-relaxed text-terminal-green">
                 Where I learned that zeros and ones could build worlds.
                 That logic gates were portals. That algorithms were poetry.
               </p>
@@ -93,7 +93,7 @@ export default function About() {
               <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
                 Science (Research) in Informatics
               </h3>
-              <p className="font-mono text-sm leading-relaxed text-terminal-green/70">
+              <p className="font-mono text-sm leading-relaxed text-terminal-green">
                 Where questions became more valuable than answers.
                 Where I learned that research is just organized curiosity—
                 and sometimes, beautiful chaos.
@@ -109,7 +109,7 @@ export default function About() {
               <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
                 Engineering Doctorate
               </h3>
-              <p className="font-mono text-sm italic leading-relaxed text-terminal-green/70">
+              <p className="font-mono text-sm italic leading-relaxed text-terminal-green">
                 "Nothing really matters." <br />
                 But if it did, this would be where theory met reality.
                 Where I became both the question and the answer.
@@ -128,7 +128,7 @@ export default function About() {
           }`}
         >
           <div className="border-y border-terminal-green/30 py-8 text-center">
-            <p className="font-mono text-xl leading-relaxed text-terminal-green/90 md:text-2xl">
+            <p className="font-mono text-xl leading-relaxed text-terminal-green md:text-2xl">
               <span className="text-terminal-amber">[</span>
               <span className="text-neon-pink">25%</span> Engineer{" "}
               <span className="text-terminal-green">|</span>{" "}
