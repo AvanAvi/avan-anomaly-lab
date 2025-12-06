@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import EMDriveTransition from "@/components/effects/EMDriveTransition";
 
 interface TransitionContextType {
@@ -10,6 +11,7 @@ interface TransitionContextType {
 const TransitionContext = createContext<TransitionContextType | undefined>(undefined);
 
 export function TransitionProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [destination, setDestination] = useState<string>("");
 
@@ -18,14 +20,14 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
     window.scrollTo({ top: 0, behavior: 'instant' });
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    
+
     setDestination(dest);
     setIsTransitioning(true);
   };
 
   const handleTransitionComplete = () => {
     // Navigate after animation completes
-    window.location.href = destination;
+    router.push(destination);
   };
 
   return (
