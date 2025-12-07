@@ -14,7 +14,7 @@ const ISO_TRANSFORM = "rotateX(60deg) rotateZ(-45deg)";
 const ISO_SCALE = "scale(1)";
 
 // ============================================
-// STAGE 1: IDEATION - Character at desk with lightbulb moment
+// STAGE 1: IDEATION - Clean, minimal design
 // ============================================
 function IdeationStage({ active }: { active: boolean }) {
   const [phase, setPhase] = useState(0);
@@ -22,287 +22,229 @@ function IdeationStage({ active }: { active: boolean }) {
   useEffect(() => {
     if (!active) return;
     const timers = [
-      setTimeout(() => setPhase(1), 500),   // Start typing
-      setTimeout(() => setPhase(2), 1500),  // Stop, thinking
-      setTimeout(() => setPhase(3), 2000),  // Lightbulb!
-      setTimeout(() => setPhase(4), 2500),  // Excited typing
+      setTimeout(() => setPhase(1), 400),   // Start thinking
+      setTimeout(() => setPhase(2), 1200),  // Ideas floating
+      setTimeout(() => setPhase(3), 2200),  // Lightbulb moment
     ];
     return () => timers.forEach(clearTimeout);
   }, [active]);
 
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center"
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: active ? 1 : 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Isometric room/desk setup */}
-      <div className="relative" style={{ perspective: "1000px" }}>
-        {/* Floor grid */}
-        <div 
-          className="absolute -bottom-20 left-1/2 h-64 w-64 -translate-x-1/2 opacity-20"
-          style={{
-            background: "linear-gradient(90deg, #00ffff 1px, transparent 1px), linear-gradient(#00ffff 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-            transform: `${ISO_TRANSFORM} translateZ(-50px)`,
-          }}
-        />
-
-        {/* Desk - Isometric */}
+      {/* Main content container - centered */}
+      <div className="relative flex flex-col items-center">
+        
+        {/* Thinking character - simple, clean */}
         <motion.div
           className="relative"
-          style={{ transform: "perspective(800px) rotateX(10deg)" }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Desk surface */}
-          <div className="relative h-32 w-80 rounded-lg bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 shadow-2xl">
-            {/* Desk edge highlight */}
-            <div className="absolute inset-x-0 top-0 h-1 rounded-t-lg bg-gradient-to-r from-gray-600 via-gray-500 to-gray-600" />
-            
-            {/* Monitor */}
-            <motion.div 
-              className="absolute -top-24 left-1/2 -translate-x-1/2"
-              animate={{ 
-                filter: phase >= 1 ? "brightness(1.2)" : "brightness(0.8)" 
-              }}
-            >
-              {/* Monitor frame */}
-              <div className="relative h-20 w-32 rounded-sm border-2 border-gray-600 bg-dark-900">
-                {/* Screen content */}
-                <div className="absolute inset-1 overflow-hidden rounded-sm bg-dark-800">
-                  {/* Code lines */}
-                  {phase >= 1 && (
-                    <motion.div className="space-y-1 p-2">
-                      {[...Array(5)].map((_, i) => (
-                        <motion.div
-                          key={i}
-                          className="h-1 rounded bg-terminal-green/60"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${40 + Math.random() * 50}%` }}
-                          transition={{ delay: i * 0.1, duration: 0.3 }}
-                        />
-                      ))}
-                    </motion.div>
-                  )}
-                  
-                  {/* Screen glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-neon-cyan/10 to-transparent" />
-                </div>
-                
-                {/* Monitor stand */}
-                <div className="absolute -bottom-4 left-1/2 h-4 w-4 -translate-x-1/2 bg-gray-700" />
-                <div className="absolute -bottom-5 left-1/2 h-1 w-12 -translate-x-1/2 rounded bg-gray-600" />
-              </div>
-            </motion.div>
-
-            {/* Keyboard */}
-            <motion.div 
-              className="absolute bottom-4 left-1/2 h-6 w-24 -translate-x-1/2 rounded-sm bg-gray-800"
-              animate={{
-                boxShadow: phase === 1 || phase === 4 
-                  ? "0 0 10px rgba(0, 255, 255, 0.3)" 
-                  : "none"
-              }}
-            >
-              {/* Keys indication */}
-              <div className="grid h-full w-full grid-cols-10 gap-px p-1">
-                {[...Array(20)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="rounded-sm bg-gray-700"
-                    animate={{
-                      backgroundColor: (phase === 1 || phase === 4) && Math.random() > 0.7 
-                        ? "#00ffff" 
-                        : "#374151"
-                    }}
-                    transition={{ duration: 0.1 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Coffee mug */}
-            <div className="absolute bottom-3 right-6 h-5 w-4 rounded-b-lg bg-gray-600">
-              <div className="absolute -right-1 top-1 h-3 w-2 rounded-r-full border-2 border-gray-600 bg-transparent" />
-              {/* Steam */}
-              <motion.div
-                className="absolute -top-3 left-1/2 text-[8px] text-gray-500"
-                animate={{ y: [-2, -6, -2], opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                ~
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Character - Person in hoodie */}
-        <motion.div
-          className="absolute -top-12 left-1/2 -translate-x-1/2"
-          animate={{
-            y: phase === 3 ? -5 : 0,
-          }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          {/* Head */}
-          <motion.div 
-            className="relative mx-auto h-10 w-8 rounded-full bg-gradient-to-b from-amber-200 to-amber-300"
-            animate={{
-              rotateZ: phase === 2 ? [0, -5, 5, 0] : 0,
+          {/* Head with thinking animation */}
+          <motion.div
+            className="relative h-20 w-16 rounded-full bg-gradient-to-b from-amber-200 to-amber-300"
+            animate={{ 
+              rotateZ: phase === 1 ? [0, -3, 3, 0] : 0,
             }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 2, repeat: phase === 1 ? Infinity : 0 }}
           >
             {/* Hair */}
-            <div className="absolute -top-1 left-0 right-0 h-4 rounded-t-full bg-gray-900" />
+            <div className="absolute -top-1 left-1 right-1 h-8 rounded-t-full bg-gray-800" />
+            
             {/* Eyes */}
-            <div className="absolute top-4 flex w-full justify-center gap-2">
+            <div className="absolute top-9 flex w-full justify-center gap-4">
               <motion.div 
-                className="h-1 w-1 rounded-full bg-gray-900"
-                animate={{ scaleY: phase === 3 ? [1, 1.5, 1] : 1 }}
+                className="h-2 w-2 rounded-full bg-gray-900"
+                animate={{ 
+                  y: phase >= 1 && phase < 3 ? [0, -2, 0] : 0,
+                }}
+                transition={{ duration: 1.5, repeat: Infinity }}
               />
               <motion.div 
-                className="h-1 w-1 rounded-full bg-gray-900"
-                animate={{ scaleY: phase === 3 ? [1, 1.5, 1] : 1 }}
+                className="h-2 w-2 rounded-full bg-gray-900"
+                animate={{ 
+                  y: phase >= 1 && phase < 3 ? [0, -2, 0] : 0,
+                }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: 0.1 }}
               />
             </div>
+            
+            {/* Mouth - slight smile when eureka */}
+            <motion.div
+              className="absolute bottom-4 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-gray-700"
+              animate={{ 
+                scaleX: phase === 3 ? 1.5 : 1,
+                borderRadius: phase === 3 ? "0 0 8px 8px" : "4px"
+              }}
+            />
           </motion.div>
 
-          {/* Hoodie body */}
-          <div className="relative -mt-1 h-14 w-16 rounded-b-lg bg-gradient-to-b from-gray-700 to-gray-800">
-            {/* Hood */}
-            <div className="absolute -top-2 left-1/2 h-6 w-12 -translate-x-1/2 rounded-t-full bg-gray-700" />
-            {/* Hoodie pocket */}
-            <div className="absolute bottom-2 left-1/2 h-3 w-10 -translate-x-1/2 rounded-b border-t border-gray-600 bg-gray-750" />
-            
-            {/* Arms on keyboard */}
-            <motion.div
-              className="absolute -bottom-2 left-0 h-3 w-8 rounded-full bg-gray-700"
-              style={{ transform: "rotate(-20deg)" }}
-              animate={{
-                y: phase === 1 || phase === 4 ? [0, -1, 0] : 0,
-              }}
-              transition={{ duration: 0.15, repeat: phase === 1 || phase === 4 ? Infinity : 0 }}
-            />
-            <motion.div
-              className="absolute -bottom-2 right-0 h-3 w-8 rounded-full bg-gray-700"
-              style={{ transform: "rotate(20deg)" }}
-              animate={{
-                y: phase === 1 || phase === 4 ? [0, -1, 0] : 0,
-              }}
-              transition={{ duration: 0.15, repeat: phase === 1 || phase === 4 ? Infinity : 0, delay: 0.075 }}
-            />
-          </div>
-
-          {/* Headphones */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2">
-            <div className="absolute -left-5 top-2 h-4 w-2 rounded-l-full bg-gray-600" />
-            <div className="absolute -right-5 top-2 h-4 w-2 rounded-r-full bg-gray-600" />
-            <div className="absolute -top-1 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-gray-600" />
-          </div>
+          {/* Simple body/shoulders */}
+          <div className="mx-auto -mt-2 h-12 w-24 rounded-t-3xl bg-gradient-to-b from-gray-600 to-gray-700" />
         </motion.div>
 
-        {/* Lightbulb - Appears on phase 3 */}
+        {/* Thinking dots - appear in phase 1-2 */}
+        <AnimatePresence>
+          {phase >= 1 && phase < 3 && (
+            <motion.div
+              className="absolute -right-8 -top-4 flex flex-col items-center gap-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="rounded-full bg-gray-500"
+                  style={{ width: 6 + i * 2, height: 6 + i * 2 }}
+                  animate={{ 
+                    opacity: [0.4, 1, 0.4],
+                    scale: [0.9, 1.1, 0.9],
+                  }}
+                  transition={{ 
+                    duration: 1.2, 
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                  }}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating idea fragments - phase 2 */}
+        <AnimatePresence>
+          {phase >= 2 && phase < 3 && (
+            <>
+              {["?", "...", "💭"].map((item, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute text-2xl text-gray-400"
+                  style={{
+                    left: -40 + i * 40,
+                    top: -80 - i * 15,
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: [0.3, 0.7, 0.3],
+                    y: [0, -10, 0],
+                  }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: i * 0.3,
+                  }}
+                >
+                  {item}
+                </motion.div>
+              ))}
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* LIGHTBULB - Eureka moment */}
         <AnimatePresence>
           {phase >= 3 && (
             <motion.div
-              className="absolute -top-32 left-1/2"
-              initial={{ scale: 0, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="absolute -top-40"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 15 }}
             >
-              {/* Thought bubble dots */}
+              {/* Glow effect behind bulb */}
               <motion.div
-                className="absolute -bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <div className="h-1 w-1 rounded-full bg-terminal-amber/60" />
-                <div className="h-1.5 w-1.5 rounded-full bg-terminal-amber/60" />
-                <div className="h-2 w-2 rounded-full bg-terminal-amber/60" />
-              </motion.div>
-
-              {/* Lightbulb */}
-              <motion.div
-                className="relative"
-                animate={{
-                  filter: ["brightness(1)", "brightness(1.3)", "brightness(1)"],
+                className="absolute -inset-8 rounded-full bg-terminal-amber/20"
+                animate={{ 
+                  scale: [1, 1.3, 1],
+                  opacity: [0.3, 0.6, 0.3],
                 }}
+                transition={{ duration: 1, repeat: Infinity }}
+              />
+              
+              {/* Lightbulb SVG */}
+              <motion.svg 
+                width="60" 
+                height="80" 
+                viewBox="0 0 60 80"
+                animate={{ filter: ["brightness(1)", "brightness(1.2)", "brightness(1)"] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <svg width="40" height="50" viewBox="0 0 40 50">
-                  {/* Bulb glow */}
-                  <motion.circle
-                    cx="20"
-                    cy="18"
-                    r="18"
-                    fill="url(#bulbGlow)"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  />
-                  {/* Bulb glass */}
-                  <path
-                    d="M20 2 C30 2 36 10 36 18 C36 26 28 32 28 36 L12 36 C12 32 4 26 4 18 C4 10 10 2 20 2"
-                    fill="#ffb000"
-                    stroke="#ff8c00"
-                    strokeWidth="1"
-                  />
-                  {/* Bulb base */}
-                  <rect x="12" y="36" width="16" height="4" fill="#666" rx="1" />
-                  <rect x="14" y="40" width="12" height="3" fill="#555" rx="1" />
-                  <rect x="16" y="43" width="8" height="2" fill="#444" rx="1" />
-                  {/* Filament */}
-                  <path
-                    d="M16 28 Q20 20 24 28"
-                    fill="none"
-                    stroke="#fff"
-                    strokeWidth="2"
-                    opacity="0.8"
-                  />
-                  <defs>
-                    <radialGradient id="bulbGlow">
-                      <stop offset="0%" stopColor="#ffb000" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="#ffb000" stopOpacity="0" />
-                    </radialGradient>
-                  </defs>
-                </svg>
+                {/* Outer glow */}
+                <circle cx="30" cy="30" r="28" fill="#ffb000" opacity="0.2" />
+                
+                {/* Bulb glass */}
+                <path
+                  d="M30 5 C45 5 55 18 55 30 C55 42 43 52 43 58 L17 58 C17 52 5 42 5 30 C5 18 15 5 30 5"
+                  fill="#ffb000"
+                  stroke="#ff8c00"
+                  strokeWidth="2"
+                />
+                
+                {/* Inner highlight */}
+                <ellipse cx="22" cy="22" rx="8" ry="10" fill="#ffe066" opacity="0.4" />
+                
+                {/* Filament */}
+                <path
+                  d="M22 42 Q30 30 38 42"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="3"
+                  opacity="0.9"
+                />
+                
+                {/* Base */}
+                <rect x="17" y="58" width="26" height="6" fill="#666" rx="1" />
+                <rect x="19" y="64" width="22" height="5" fill="#555" rx="1" />
+                <rect x="22" y="69" width="16" height="4" fill="#444" rx="2" />
+              </motion.svg>
 
-                {/* Rays */}
-                {[...Array(8)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute left-1/2 top-4 h-4 w-0.5 bg-terminal-amber"
-                    style={{
-                      transformOrigin: "bottom center",
-                      transform: `rotate(${i * 45}deg) translateY(-24px)`,
-                    }}
-                    initial={{ scaleY: 0, opacity: 0 }}
-                    animate={{ scaleY: 1, opacity: [0, 1, 0] }}
-                    transition={{ delay: 0.1 + i * 0.05, duration: 0.8, repeat: Infinity }}
-                  />
-                ))}
-              </motion.div>
+              {/* Rays */}
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute left-1/2 top-8 h-6 w-1 rounded-full bg-terminal-amber"
+                  style={{
+                    transformOrigin: "center bottom",
+                    transform: `translateX(-50%) rotate(${i * 45}deg) translateY(-45px)`,
+                  }}
+                  initial={{ scaleY: 0, opacity: 0 }}
+                  animate={{ 
+                    scaleY: [0, 1, 0],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{ 
+                    delay: i * 0.05,
+                    duration: 0.8, 
+                    repeat: Infinity,
+                    repeatDelay: 0.5,
+                  }}
+                />
+              ))}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Stage label */}
+      {/* Stage label - positioned at bottom with good spacing */}
       <motion.div
-        className="absolute bottom-32 left-1/2 -translate-x-1/2 text-center"
+        className="absolute bottom-16 left-0 right-0 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="font-mono text-xs text-terminal-amber/60">STAGE 01</div>
-        <div className="font-mono text-2xl font-bold text-terminal-amber">IDEATION</div>
+        <div className="font-mono text-xs tracking-widest text-terminal-amber/60">STAGE 01</div>
+        <div className="mt-1 font-mono text-2xl font-bold text-terminal-amber">IDEATION</div>
         <motion.div 
-          className="mt-2 font-mono text-sm text-terminal-green/60"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="mt-2 font-mono text-sm text-gray-400"
         >
-          {phase < 3 ? "Processing thoughts..." : "💡 Eureka!"}
+          {phase < 3 ? "Brainstorming..." : "💡 Eureka!"}
         </motion.div>
       </motion.div>
     </motion.div>
@@ -310,7 +252,7 @@ function IdeationStage({ active }: { active: boolean }) {
 }
 
 // ============================================
-// STAGE 2: DESIGN - Blueprint unfolds with wireframes
+// STAGE 2: DESIGN - Clean blueprint with proper sizing
 // ============================================
 function DesignStage({ active }: { active: boolean }) {
   const [phase, setPhase] = useState(0);
@@ -320,271 +262,278 @@ function DesignStage({ active }: { active: boolean }) {
     const timers = [
       setTimeout(() => setPhase(1), 300),   // Paper unfolds
       setTimeout(() => setPhase(2), 800),   // Grid appears
-      setTimeout(() => setPhase(3), 1200),  // Wireframes draw
-      setTimeout(() => setPhase(4), 2000),  // Annotations
+      setTimeout(() => setPhase(3), 1400),  // Wireframes draw
+      setTimeout(() => setPhase(4), 2400),  // Complete
     ];
     return () => timers.forEach(clearTimeout);
   }, [active]);
 
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center"
+      className="absolute inset-0 flex items-center justify-center overflow-hidden px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: active ? 1 : 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Blueprint paper - Isometric */}
+      {/* Blueprint container - responsive sizing */}
       <motion.div
-        className="relative"
+        className="relative w-full max-w-lg"
         style={{ perspective: "1000px" }}
-        initial={{ rotateX: -90, opacity: 0 }}
+        initial={{ rotateX: -60, opacity: 0 }}
         animate={{ 
-          rotateX: phase >= 1 ? 0 : -90,
+          rotateX: phase >= 1 ? 0 : -60,
           opacity: phase >= 1 ? 1 : 0,
         }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        {/* Main blueprint */}
+        {/* Main blueprint panel */}
         <div 
-          className="relative h-80 w-[500px] rounded border-2 border-neon-cyan/30 bg-dark-800/90 p-6"
+          className="relative rounded-lg border-2 border-neon-cyan/40 bg-dark-800/95 p-4 shadow-xl sm:p-6"
           style={{
             backgroundImage: phase >= 2 
               ? "linear-gradient(90deg, rgba(0,255,255,0.05) 1px, transparent 1px), linear-gradient(rgba(0,255,255,0.05) 1px, transparent 1px)"
               : "none",
-            backgroundSize: "20px 20px",
+            backgroundSize: "16px 16px",
           }}
         >
           {/* Blueprint header */}
-          <div className="mb-4 flex items-center justify-between border-b border-neon-cyan/20 pb-2">
-            <div className="font-mono text-xs text-neon-cyan/60">PROJECT_BLUEPRINT_v1.0</div>
-            <div className="font-mono text-xs text-neon-cyan/60">SCALE: 1:1</div>
+          <div className="mb-3 flex items-center justify-between border-b border-neon-cyan/20 pb-2">
+            <div className="font-mono text-[10px] text-neon-cyan/70 sm:text-xs">BLUEPRINT_v1.0</div>
+            <div className="font-mono text-[10px] text-neon-cyan/50 sm:text-xs">SCALE 1:1</div>
           </div>
 
-          {/* Wireframe components - drawn progressively */}
-          <div className="relative h-full">
-            {/* Main app wireframe */}
+          {/* Wireframe content area */}
+          <div className="relative h-48 sm:h-56">
+            {/* App wireframe - Left side */}
             {phase >= 3 && (
               <motion.div
-                className="absolute left-4 top-4"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
+                className="absolute left-0 top-0"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4 }}
               >
-                <svg width="200" height="150" className="overflow-visible">
+                <svg 
+                  viewBox="0 0 160 120" 
+                  className="h-28 w-36 sm:h-32 sm:w-44"
+                >
                   {/* Browser window */}
                   <motion.rect
-                    x="0" y="0" width="180" height="120"
-                    fill="none"
+                    x="0" y="0" width="155" height="115"
+                    fill="rgba(0,255,255,0.05)"
                     stroke="#00ffff"
                     strokeWidth="2"
+                    rx="4"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
                     transition={{ duration: 0.5 }}
                   />
                   {/* Title bar */}
-                  <motion.line
-                    x1="0" y1="20" x2="180" y2="20"
-                    stroke="#00ffff"
-                    strokeWidth="1"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.3, delay: 0.3 }}
-                  />
+                  <rect x="0" y="0" width="155" height="18" fill="rgba(0,255,255,0.1)" rx="4" />
+                  <line x1="0" y1="18" x2="155" y2="18" stroke="#00ffff" strokeWidth="1" opacity="0.5" />
+                  
                   {/* Window buttons */}
-                  <motion.circle cx="12" cy="10" r="4" fill="#ff006e" 
+                  <motion.circle cx="12" cy="9" r="3" fill="#ff006e" 
+                    initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }} />
+                  <motion.circle cx="24" cy="9" r="3" fill="#ffb000"
+                    initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.35 }} />
+                  <motion.circle cx="36" cy="9" r="3" fill="#00ff41"
                     initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4 }} />
-                  <motion.circle cx="26" cy="10" r="4" fill="#ffb000"
-                    initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.45 }} />
-                  <motion.circle cx="40" cy="10" r="4" fill="#00ff41"
-                    initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }} />
                   
                   {/* Sidebar */}
                   <motion.rect
-                    x="5" y="25" width="40" height="90"
+                    x="4" y="24" width="35" height="86"
                     fill="none"
                     stroke="#00ffff"
                     strokeWidth="1"
-                    strokeDasharray="4 2"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.4, delay: 0.5 }}
+                    strokeDasharray="3 2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.7 }}
+                    transition={{ delay: 0.5 }}
                   />
                   
-                  {/* Content area */}
+                  {/* Header */}
                   <motion.rect
-                    x="50" y="25" width="125" height="60"
+                    x="44" y="24" width="106" height="20"
                     fill="none"
                     stroke="#00ffff"
                     strokeWidth="1"
-                    strokeDasharray="4 2"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.4, delay: 0.6 }}
+                    strokeDasharray="3 2"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.7 }}
+                    transition={{ delay: 0.6 }}
                   />
                   
-                  {/* Cards */}
+                  {/* Content cards */}
                   {[0, 1, 2].map((i) => (
                     <motion.rect
                       key={i}
-                      x={55 + i * 42}
-                      y="90"
-                      width="38"
-                      height="25"
-                      fill="none"
+                      x={44 + i * 36}
+                      y="50"
+                      width="32"
+                      height="55"
+                      rx="2"
+                      fill="rgba(0,255,255,0.05)"
                       stroke="#00ffff"
                       strokeWidth="1"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.3, delay: 0.7 + i * 0.1 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 0.8, scale: 1 }}
+                      transition={{ delay: 0.7 + i * 0.1 }}
                     />
                   ))}
                 </svg>
               </motion.div>
             )}
 
-            {/* Component diagram */}
+            {/* Architecture diagram - Right side */}
             {phase >= 3 && (
               <motion.div
-                className="absolute right-4 top-4"
+                className="absolute right-0 top-0"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
               >
-                <svg width="140" height="150">
+                <svg viewBox="0 0 100 120" className="h-28 w-24 sm:h-32 sm:w-28">
                   {/* Component boxes */}
-                  {["API", "DB", "UI"].map((label, i) => (
-                    <g key={label}>
+                  {[
+                    { label: "UI", y: 5, color: "#00ffff" },
+                    { label: "API", y: 45, color: "#00ff41" },
+                    { label: "DB", y: 85, color: "#ffb000" },
+                  ].map((item, i) => (
+                    <g key={item.label}>
                       <motion.rect
-                        x="30"
-                        y={10 + i * 45}
+                        x="10"
+                        y={item.y}
                         width="80"
-                        height="35"
-                        fill="rgba(0,255,255,0.1)"
-                        stroke="#00ffff"
-                        strokeWidth="1"
+                        height="28"
+                        rx="4"
+                        fill={`${item.color}10`}
+                        stroke={item.color}
+                        strokeWidth="1.5"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: 1 + i * 0.15 }}
+                        transition={{ delay: 0.8 + i * 0.15 }}
                       />
                       <motion.text
-                        x="70"
-                        y={32 + i * 45}
-                        fill="#00ffff"
-                        fontSize="12"
+                        x="50"
+                        y={item.y + 18}
+                        fill={item.color}
+                        fontSize="11"
                         textAnchor="middle"
                         fontFamily="monospace"
+                        fontWeight="bold"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 1.1 + i * 0.15 }}
+                        transition={{ delay: 0.9 + i * 0.15 }}
                       >
-                        {label}
+                        {item.label}
                       </motion.text>
                     </g>
                   ))}
-                  {/* Connecting arrows */}
-                  <motion.path
-                    d="M70 45 L70 55 M70 90 L70 100"
-                    stroke="#00ff41"
+                  
+                  {/* Connecting lines */}
+                  <motion.line
+                    x1="50" y1="33" x2="50" y2="45"
+                    stroke="#666"
                     strokeWidth="2"
-                    markerEnd="url(#arrowhead)"
                     initial={{ pathLength: 0 }}
                     animate={{ pathLength: 1 }}
-                    transition={{ delay: 1.5, duration: 0.3 }}
+                    transition={{ delay: 1.3 }}
                   />
-                  <defs>
-                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                      <polygon points="0 0, 10 3.5, 0 7" fill="#00ff41" />
-                    </marker>
-                  </defs>
+                  <motion.line
+                    x1="50" y1="73" x2="50" y2="85"
+                    stroke="#666"
+                    strokeWidth="2"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ delay: 1.4 }}
+                  />
+                  
+                  {/* Arrows */}
+                  <motion.polygon
+                    points="45,44 50,40 55,44"
+                    fill="#666"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.35 }}
+                  />
+                  <motion.polygon
+                    points="45,84 50,80 55,84"
+                    fill="#666"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.45 }}
+                  />
                 </svg>
               </motion.div>
             )}
 
-            {/* Annotations */}
+            {/* Labels */}
             {phase >= 4 && (
               <>
                 <motion.div
-                  className="absolute bottom-16 left-4 font-mono text-[10px] text-terminal-amber"
+                  className="absolute bottom-8 left-0 font-mono text-[9px] text-terminal-amber sm:text-[10px]"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
-                  ← Main Interface
+                  ← Interface
                 </motion.div>
                 <motion.div
-                  className="absolute bottom-16 right-4 font-mono text-[10px] text-terminal-amber"
+                  className="absolute bottom-8 right-0 font-mono text-[9px] text-terminal-amber sm:text-[10px]"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
+                  transition={{ delay: 0.15 }}
                 >
-                  Architecture →
-                </motion.div>
-                
-                {/* Dimension lines */}
-                <motion.div
-                  className="absolute bottom-4 left-4 right-4 flex items-center justify-between"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <div className="h-px flex-1 bg-neon-cyan/30" />
-                  <span className="mx-2 font-mono text-[10px] text-neon-cyan/60">480px</span>
-                  <div className="h-px flex-1 bg-neon-cyan/30" />
+                  Stack →
                 </motion.div>
               </>
+            )}
+
+            {/* Bottom dimension line */}
+            {phase >= 4 && (
+              <motion.div
+                className="absolute bottom-0 left-0 right-0 flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <div className="h-px flex-1 bg-neon-cyan/30" />
+                <span className="font-mono text-[9px] text-neon-cyan/60">responsive</span>
+                <div className="h-px flex-1 bg-neon-cyan/30" />
+              </motion.div>
             )}
           </div>
 
           {/* Corner markers */}
           {[
-            "top-0 left-0 border-t-2 border-l-2",
-            "top-0 right-0 border-t-2 border-r-2",
-            "bottom-0 left-0 border-b-2 border-l-2",
-            "bottom-0 right-0 border-b-2 border-r-2",
+            "top-0 left-0 border-t-2 border-l-2 rounded-tl-lg",
+            "top-0 right-0 border-t-2 border-r-2 rounded-tr-lg",
+            "bottom-0 left-0 border-b-2 border-l-2 rounded-bl-lg",
+            "bottom-0 right-0 border-b-2 border-r-2 rounded-br-lg",
           ].map((classes, i) => (
             <motion.div
               key={i}
-              className={`absolute h-4 w-4 border-neon-cyan ${classes}`}
+              className={`absolute h-3 w-3 border-neon-cyan/60 ${classes}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
+              transition={{ delay: 0.4 + i * 0.05 }}
             />
           ))}
         </div>
-
-        {/* Floating tools */}
-        <motion.div
-          className="absolute -right-16 top-1/2 flex -translate-y-1/2 flex-col gap-3"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: phase >= 2 ? 1 : 0, x: phase >= 2 ? 0 : 20 }}
-        >
-          {["📐", "✏️", "📏"].map((tool, i) => (
-            <motion.div
-              key={i}
-              className="flex h-10 w-10 items-center justify-center rounded border border-neon-cyan/30 bg-dark-800 text-lg"
-              whileHover={{ scale: 1.1 }}
-              animate={{ y: [0, -3, 0] }}
-              transition={{ delay: i * 0.2, duration: 2, repeat: Infinity }}
-            >
-              {tool}
-            </motion.div>
-          ))}
-        </motion.div>
       </motion.div>
 
-      {/* Stage label */}
+      {/* Stage label - bottom with proper spacing */}
       <motion.div
-        className="absolute bottom-32 left-1/2 -translate-x-1/2 text-center"
+        className="absolute bottom-16 left-0 right-0 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="font-mono text-xs text-neon-cyan/60">STAGE 02</div>
-        <div className="font-mono text-2xl font-bold text-neon-cyan">DESIGN</div>
+        <div className="font-mono text-xs tracking-widest text-neon-cyan/60">STAGE 02</div>
+        <div className="mt-1 font-mono text-2xl font-bold text-neon-cyan">DESIGN</div>
         <motion.div 
-          className="mt-2 font-mono text-sm text-terminal-green/60"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="mt-2 font-mono text-sm text-gray-400"
         >
-          Architecting the solution...
+          {phase < 4 ? "Architecting solution..." : "✓ Blueprint ready!"}
         </motion.div>
       </motion.div>
     </motion.div>
