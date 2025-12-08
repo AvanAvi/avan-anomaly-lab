@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import MetadataConsentModal from '@/components/ui/MetadataConsentModal';
 
 // ============================================
 // TYPES
@@ -11,6 +12,19 @@ interface FormData {
   audioBlob: Blob | null;
   audioDuration: number;
   selfieDataUrl: string | null;
+  contactEmail: string;
+  contactSocial: string;
+}
+
+interface SubmissionResponse {
+  success: boolean;
+  id?: string;
+  location?: {
+    city: string | null;
+    country: string | null;
+    source: 'gps' | 'ip';
+  };
+  error?: string;
 }
 
 // ============================================
@@ -40,13 +54,113 @@ const AUDIO_ENCOURAGEMENTS = [
   "Your dulcet tones are being preserved",
 ];
 
+const SUCCESS_MESSAGES = [
+  "Your message has been beamed across the digital void.",
+  "Transmission received loud and clear!",
+  "Successfully stored in the Lab's quantum memory banks.",
+  "Message encrypted and delivered to Avan's consciousness.",
+];
+
+// ============================================
+// HELPER: Convert Blob to Base64
+// ============================================
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ============================================
+// HELPER: Compress Image
+// ============================================
+async function compressImage(dataUrl: string, maxWidth = 800, quality = 0.7): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Calculate new dimensions
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      ctx?.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+// ============================================
+// HELPER: Get Device Info
+// ============================================
+function getDeviceInfo() {
+  return {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    screenResolution: `${screen.width}x${screen.height}`,
+    language: navigator.language,
+  };
+}
+
+// ============================================
+// HELPER: Request GPS Location
+// ============================================
+async function requestGPSLocation(): Promise<{ lat: number; lng: number; accuracy: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
+      },
+      () => {
+        // User denied or error
+        resolve(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  });
+}
+
+// ============================================
+// HELPER: Format time
+// ============================================
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 // ============================================
 // AUDIO RECORDER COMPONENT
 // ============================================
 function AudioRecorder({ 
-  onRecordingComplete 
+  onRecordingComplete,
+  disabled,
 }: { 
-  onRecordingComplete: (blob: Blob, duration: number) => void 
+  onRecordingComplete: (blob: Blob, duration: number) => void;
+  disabled?: boolean;
 }) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -67,21 +181,16 @@ function AudioRecorder({
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     }
   }, [isRecording]);
-
-  useEffect(() => {
-    // Auto-stop at max duration
-    if (duration >= MAX_DURATION && isRecording) {
-      stopRecording();
-    }
-  }, [duration, isRecording, stopRecording]);
 
   const startRecording = async () => {
     try {
@@ -99,21 +208,27 @@ function AudioRecorder({
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        onRecordingComplete(blob, duration);
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        onRecordingComplete(audioBlob, duration);
         setHasRecording(true);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
       setDuration(0);
-
+      
       timerRef.current = setInterval(() => {
-        setDuration(d => d + 1);
+        setDuration(prev => {
+          if (prev >= MAX_DURATION - 1) {
+            stopRecording();
+            return prev;
+          }
+          return prev + 1;
+        });
       }, 1000);
-
+      
     } catch (err) {
-      console.error('Microphone access denied:', err);
+      console.error('Microphone error:', err);
       setPermissionDenied(true);
     }
   };
@@ -124,11 +239,14 @@ function AudioRecorder({
     onRecordingComplete(null as unknown as Blob, 0);
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   if (permissionDenied) {
     return (
@@ -173,16 +291,16 @@ function AudioRecorder({
             <motion.button
               type="button"
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={hasRecording}
+              disabled={hasRecording || disabled}
               className={`flex h-14 w-14 items-center justify-center rounded-full transition-all ${
                 isRecording 
                   ? 'bg-neon-pink shadow-[0_0_20px_rgba(255,0,110,0.5)]' 
-                  : hasRecording
+                  : hasRecording || disabled
                   ? 'bg-gray-600 cursor-not-allowed'
                   : 'bg-terminal-green/20 hover:bg-terminal-green/30'
               }`}
-              whileHover={!hasRecording ? { scale: 1.05 } : {}}
-              whileTap={!hasRecording ? { scale: 0.95 } : {}}
+              whileHover={!hasRecording && !disabled ? { scale: 1.05 } : {}}
+              whileTap={!hasRecording && !disabled ? { scale: 0.95 } : {}}
             >
               {isRecording ? (
                 <motion.div 
@@ -210,15 +328,16 @@ function AudioRecorder({
                 </div>
               ) : hasRecording ? (
                 <div>
-                  <p className="font-mono text-sm text-terminal-green">
-                    ✓ Recorded {formatTime(duration)}
+                  <p className="font-mono text-lg text-terminal-green">
+                    ✓ {formatTime(duration)} recorded
                   </p>
-                  <p className="font-mono text-xs text-gray-500">Voice note captured!</p>
+                  <p className="font-mono text-xs text-gray-500">Ready to transmit</p>
                 </div>
               ) : (
-                <p className="font-mono text-sm text-gray-400">
-                  Tap to record your voice note
-                </p>
+                <div>
+                  <p className="font-mono text-sm text-gray-400">Tap to record</p>
+                  <p className="font-mono text-xs text-gray-500">Add a voice message</p>
+                </div>
               )}
             </div>
           </div>
@@ -228,24 +347,17 @@ function AudioRecorder({
             <motion.button
               type="button"
               onClick={clearRecording}
-              className="rounded px-3 py-1 font-mono text-xs text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
+              disabled={disabled}
+              className="rounded-lg border border-gray-600 px-3 py-1 font-mono text-xs text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Re-record
+              Clear
             </motion.button>
           )}
         </div>
-
-        {/* Progress bar */}
-        {isRecording && (
-          <div className="mt-3 h-1 overflow-hidden rounded-full bg-dark-900">
-            <motion.div
-              className="h-full bg-gradient-to-r from-terminal-green to-neon-cyan"
-              style={{ width: `${(duration / MAX_DURATION) * 100}%` }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );
@@ -253,61 +365,57 @@ function AudioRecorder({
 
 // ============================================
 // SELFIE CAPTURE COMPONENT
-// Uses ImageCapture API (Brave-friendly) with canvas fallback
 // ============================================
-function SelfieCapture({
+function SelfieCapture({ 
   onCapture,
-}: {
+  disabled,
+}: { 
   onCapture: (dataUrl: string | null) => void;
+  disabled?: boolean;
 }) {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [captureError, setCaptureError] = useState<string | null>(null);
-  const [caption] = useState(() =>
+  const [selfieCaption] = useState(() =>
     SELFIE_CAPTIONS[Math.floor(Math.random() * SELFIE_CAPTIONS.length)]
   );
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [isCapturing, setIsCapturing] = useState(false);
-
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   const openCamera = async () => {
     try {
-      setCaptureError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: 640, height: 480 },
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Wait for video to be ready
-        await new Promise<void>((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = () => resolve();
-          }
-        });
       }
       setIsCameraOpen(true);
+      setCaptureError(null);
     } catch (err) {
-      console.error('Camera access denied:', err);
+      console.error('Camera error:', err);
       setPermissionDenied(true);
     }
   };
 
   const closeCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach(track => track.stop());
     }
     setIsCameraOpen(false);
+    setCountdown(null);
   };
 
-  const takeSelfie = () => {
+  const startCountdown = () => {
     setCountdown(3);
   };
 
-  // Capture using ImageCapture API (works in Brave)
+  // Capture methods with fallbacks
   const captureWithImageCapture = async (): Promise<string | null> => {
     if (!streamRef.current) return null;
     
@@ -319,7 +427,6 @@ function SelfieCapture({
       const imageCapture = new ImageCapture(videoTrack);
       const blob = await imageCapture.takePhoto();
       
-      // Convert blob to data URL
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
@@ -331,7 +438,6 @@ function SelfieCapture({
     }
   };
 
-  // Fallback: capture using canvas (may be blocked in Brave)
   const captureWithCanvas = async (): Promise<string | null> => {
     if (!videoRef.current) return null;
     
@@ -344,16 +450,12 @@ function SelfieCapture({
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     
-    // Draw video frame (mirrored)
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     try {
-      // Try to get data URL
       const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-      
-      // Check if it's a valid image (not blocked by fingerprinting)
       if (dataUrl && dataUrl.length > 100 && !dataUrl.includes('data:,')) {
         return dataUrl;
       }
@@ -364,7 +466,6 @@ function SelfieCapture({
     }
   };
 
-  // Capture using blob from canvas (another approach)
   const captureWithCanvasBlob = async (): Promise<string | null> => {
     if (!videoRef.current) return null;
     
@@ -401,11 +502,9 @@ function SelfieCapture({
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else {
-      // Take the photo - try multiple methods
       const capture = async () => {
         setIsCapturing(true);
         
-        // Try methods in order of Brave compatibility
         let dataUrl = await captureWithImageCapture();
         
         if (!dataUrl) {
@@ -421,7 +520,7 @@ function SelfieCapture({
           onCapture(dataUrl);
           closeCamera();
         } else {
-          setCaptureError('Could not capture image. Try disabling fingerprinting protection in Brave shields (click the lion icon).');
+          setCaptureError('Could not capture image. Try disabling fingerprinting protection in Brave shields.');
         }
         
         setIsCapturing(false);
@@ -461,7 +560,6 @@ function SelfieCapture({
         Selfie <span className="text-gray-500">(optional, captured live)</span>
       </label>
 
-      {/* Capture error message */}
       {captureError && (
         <motion.div 
           className="rounded-lg border border-terminal-amber/30 bg-terminal-amber/5 p-3"
@@ -472,14 +570,14 @@ function SelfieCapture({
           <button
             type="button"
             onClick={retakeSelfie}
-            className="mt-2 font-mono text-xs text-terminal-green underline"
+            disabled={disabled}
+            className="mt-2 font-mono text-xs text-terminal-green underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             Try again
           </button>
         </motion.div>
       )}
 
-      {/* Camera view or captured image */}
       <AnimatePresence mode="wait">
         {isCameraOpen ? (
           <motion.div
@@ -487,202 +585,165 @@ function SelfieCapture({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative overflow-hidden rounded-lg border-2 border-terminal-green/50"
+            className="relative overflow-hidden rounded-lg border-2 border-terminal-green/50 bg-dark-800"
           >
-            {/* Camcorder frame overlay */}
+            {/* Retro camera overlay */}
             <div className="pointer-events-none absolute inset-0 z-10">
-              {/* Corner brackets */}
-              <div className="absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-terminal-green" />
-              <div className="absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-terminal-green" />
-              <div className="absolute bottom-16 left-4 h-8 w-8 border-b-2 border-l-2 border-terminal-green" />
-              <div className="absolute bottom-16 right-4 h-8 w-8 border-b-2 border-r-2 border-terminal-green" />
-
-              {/* REC indicator */}
-              <div className="absolute left-6 top-6 flex items-center gap-2 rounded bg-dark-900/80 px-2 py-1">
+              <div className="absolute left-2 top-2 flex items-center gap-2">
                 <motion.div
-                  className="h-2 w-2 rounded-full bg-neon-pink"
+                  className="h-3 w-3 rounded-full bg-neon-pink"
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                <span className="font-mono text-xs text-white">LIVE</span>
+                <span className="font-mono text-xs text-neon-pink">REC</span>
               </div>
-
-              {/* Timestamp */}
-              <div className="absolute bottom-[4.5rem] left-6 rounded bg-dark-900/80 px-2 py-1">
-                <span className="font-mono text-xs text-terminal-green">
-                  {new Date().toLocaleTimeString()}
-                </span>
+              <div className="absolute right-2 top-2 font-mono text-xs text-terminal-green/60">
+                ANOMALY CAM™
               </div>
-
-              {/* ANOMALY watermark */}
-              <div className="absolute bottom-[4.5rem] right-6 rounded bg-dark-900/80 px-2 py-1">
-                <span className="font-mono text-xs text-terminal-amber">ANOMALY CAM</span>
+              <div className="absolute bottom-2 left-2 font-mono text-xs text-gray-500">
+                {new Date().toLocaleTimeString()}
               </div>
+              {/* Corner brackets */}
+              <div className="absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-terminal-green/50" />
+              <div className="absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-terminal-green/50" />
+              <div className="absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-terminal-green/50" />
+              <div className="absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-terminal-green/50" />
             </div>
-
-            {/* Countdown overlay */}
-            <AnimatePresence>
-              {(countdown !== null && countdown > 0) || isCapturing ? (
-                <motion.div
-                  className="absolute inset-0 z-20 flex items-center justify-center bg-dark-900/50"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {isCapturing ? (
-                    <motion.div
-                      className="font-mono text-2xl text-terminal-green"
-                      animate={{ opacity: [1, 0.5, 1] }}
-                      transition={{ duration: 0.5, repeat: Infinity }}
-                    >
-                      📸 Capturing...
-                    </motion.div>
-                  ) : (
-                    <motion.span
-                      key={countdown}
-                      className="font-mono text-8xl font-bold text-terminal-green"
-                      initial={{ scale: 2, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {countdown}
-                    </motion.span>
-                  )}
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
 
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="h-64 w-full bg-dark-900 object-cover"
-              style={{ transform: 'scaleX(-1)' }}
+              className="aspect-video w-full scale-x-[-1] object-cover"
             />
 
-            {/* Camera controls */}
-            <div className="flex justify-center gap-4 bg-dark-800 p-4">
-              <motion.button
-                type="button"
-                onClick={takeSelfie}
-                disabled={countdown !== null}
-                className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-transparent transition-all hover:bg-white/10 disabled:opacity-50"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            {/* Countdown overlay */}
+            {countdown !== null && countdown > 0 && (
+              <motion.div
+                className="absolute inset-0 z-20 flex items-center justify-center bg-black/50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
               >
-                <div className="h-10 w-10 rounded-full bg-white" />
-              </motion.button>
+                <motion.span
+                  key={countdown}
+                  className="font-mono text-8xl font-bold text-terminal-green"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 1.5, opacity: 0 }}
+                >
+                  {countdown}
+                </motion.span>
+              </motion.div>
+            )}
+
+            {/* Capture flash */}
+            {isCapturing && (
+              <motion.div
+                className="absolute inset-0 z-30 bg-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ duration: 0.3 }}
+              />
+            )}
+
+            {/* Controls */}
+            <div className="flex justify-center gap-4 bg-dark-900/80 p-4">
               <motion.button
                 type="button"
                 onClick={closeCamera}
-                className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-700 text-white transition-colors hover:bg-gray-600"
+                disabled={disabled}
+                className="rounded-lg border border-gray-600 px-4 py-2 font-mono text-sm text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                ✕
+                Cancel
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={startCountdown}
+                disabled={countdown !== null || disabled}
+                className="rounded-lg bg-terminal-green px-6 py-2 font-mono text-sm font-bold text-dark-900 transition-all hover:bg-terminal-green/90 disabled:cursor-not-allowed disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {countdown !== null ? 'Get Ready!' : '📸 Capture'}
               </motion.button>
             </div>
           </motion.div>
         ) : capturedImage ? (
           <motion.div
-            key="captured"
+            key="preview"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative overflow-hidden rounded-lg border-2 border-terminal-green"
+            className="relative overflow-hidden rounded-lg border border-terminal-green/30 bg-dark-800"
           >
-            {/* Camcorder frame on captured image */}
-            <div className="pointer-events-none absolute inset-0 z-10">
-              {/* Corner brackets */}
-              <div className="absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-terminal-green" />
-              <div className="absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-terminal-green" />
-              <div className="absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-terminal-green" />
-              <div className="absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-terminal-green" />
-
-              {/* Captured indicator */}
-              <div className="absolute left-4 top-4 flex items-center gap-2 rounded bg-dark-900/80 px-2 py-1">
-                <span className="font-mono text-xs text-terminal-green">✓ CAPTURED</span>
-              </div>
-
-              {/* ANOMALY watermark */}
-              <div className="absolute bottom-4 right-4 rounded bg-dark-900/80 px-2 py-1">
-                <span className="font-mono text-xs text-terminal-amber">ANOMALY CAM</span>
-              </div>
-
-              {/* Scanlines effect */}
-              <div 
-                className="absolute inset-0 opacity-10"
-                style={{
-                  background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)',
-                }}
-              />
-            </div>
-
-            <img
-              src={capturedImage}
-              alt="Your selfie"
-              className="h-64 w-full object-cover"
+            <img 
+              src={capturedImage} 
+              alt="Your selfie" 
+              className="aspect-video w-full object-cover"
             />
-
-            {/* Caption */}
-            <div className="bg-dark-800 p-3 text-center">
-              <p className="font-mono text-sm text-terminal-amber">{caption}</p>
+            
+            {/* Caption overlay */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark-900 to-transparent p-4">
+              <p className="font-mono text-xs text-terminal-green/80">{selfieCaption}</p>
             </div>
 
-            {/* Retake button */}
-            <div className="flex justify-center gap-3 bg-dark-800 pb-4">
-              <motion.button
-                type="button"
-                onClick={retakeSelfie}
-                className="rounded-lg border border-terminal-green/30 px-4 py-2 font-mono text-sm text-terminal-green transition-colors hover:bg-terminal-green/10"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                📸 Retake
-              </motion.button>
+            {/* Action buttons */}
+            <div className="flex justify-end gap-2 bg-dark-900/80 p-3">
               <motion.button
                 type="button"
                 onClick={clearSelfie}
-                className="rounded-lg border border-gray-600 px-4 py-2 font-mono text-sm text-gray-400 transition-colors hover:bg-gray-700"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={disabled}
+                className="rounded-lg border border-gray-600 px-3 py-1 font-mono text-xs text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Remove
+              </motion.button>
+              <motion.button
+                type="button"
+                onClick={retakeSelfie}
+                disabled={disabled}
+                className="rounded-lg border border-terminal-green/50 px-3 py-1 font-mono text-xs text-terminal-green transition-all hover:bg-terminal-green/10 disabled:cursor-not-allowed disabled:opacity-50"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Retake
               </motion.button>
             </div>
           </motion.div>
         ) : (
           <motion.button
-            key="button"
+            key="trigger"
             type="button"
             onClick={openCamera}
+            disabled={disabled}
+            className="group relative w-full overflow-hidden rounded-lg border border-dashed border-terminal-green/30 bg-dark-800/30 p-8 transition-all hover:border-terminal-green/50 hover:bg-dark-800/50 disabled:cursor-not-allowed disabled:opacity-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="group relative w-full overflow-hidden rounded-lg border-2 border-dashed border-terminal-green/30 bg-dark-800/30 p-8 transition-all hover:border-terminal-green/50 hover:bg-dark-800/50"
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
             <div className="flex flex-col items-center gap-3">
               <motion.div
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-terminal-green/10 text-3xl"
+                className="text-4xl"
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                📷
+                📸
               </motion.div>
-              <p className="font-mono text-sm text-terminal-green">
-                Click to open camera & take a selfie
+              <p className="font-mono text-sm text-gray-400">
+                Tap to open camera
               </p>
-              <p className="font-mono text-xs text-gray-500">
-                No uploads - captured live for security
+              <p className="font-mono text-xs text-gray-600">
+                Show Avan who&apos;s reaching out!
               </p>
             </div>
-
-            {/* Decorative corner brackets on hover */}
-            <div className="pointer-events-none absolute inset-4 opacity-0 transition-opacity group-hover:opacity-100">
+            
+            {/* Corner decorations */}
+            <div className="pointer-events-none absolute inset-4">
               <div className="absolute left-0 top-0 h-6 w-6 border-l border-t border-terminal-green/40" />
               <div className="absolute right-0 top-0 h-6 w-6 border-r border-t border-terminal-green/40" />
               <div className="absolute bottom-0 left-0 h-6 w-6 border-b border-l border-terminal-green/40" />
@@ -704,39 +765,101 @@ export default function ContactSection() {
     audioBlob: null,
     audioDuration: 0,
     selfieDataUrl: null,
+    contactEmail: '',
+    contactSocial: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<SubmissionResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [placeholder] = useState(() =>
     WITTY_PLACEHOLDERS[Math.floor(Math.random() * WITTY_PLACEHOLDERS.length)]
   );
+  const [successMessage] = useState(() =>
+    SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)]
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission trigger
+  const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.message.trim()) {
       return;
     }
 
+    setError(null);
+    setShowConsentModal(true);
+  };
+
+  // Handle consent and actual submission
+  const handleConsent = async (preciselocation: boolean) => {
     setIsSubmitting(true);
 
-    // Simulate submission - replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Get GPS location if user consented
+      let locationCoords = null;
+      if (preciselocation) {
+        locationCoords = await requestGPSLocation();
+      }
 
-    // Here you would typically send:
-    // - formData.message (text)
-    // - formData.audioBlob (audio file)
-    // - formData.selfieDataUrl (base64 image)
-    
-    console.log('Form submitted:', {
-      message: formData.message,
-      hasAudio: !!formData.audioBlob,
-      audioDuration: formData.audioDuration,
-      hasSelfie: !!formData.selfieDataUrl,
-    });
+      // Prepare audio data
+      let audioBase64 = null;
+      if (formData.audioBlob) {
+        audioBase64 = await blobToBase64(formData.audioBlob);
+      }
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      // Compress and prepare image data
+      let imageBase64 = null;
+      if (formData.selfieDataUrl) {
+        imageBase64 = await compressImage(formData.selfieDataUrl, 800, 0.7);
+      }
+
+      // Gather device info
+      const deviceInfo = getDeviceInfo();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const timezoneOffset = new Date().getTimezoneOffset();
+      const languages = [...navigator.languages];
+
+      // Send to API
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: formData.message.trim(),
+          audioBase64,
+          audioDuration: formData.audioDuration || null,
+          imageBase64,
+          contactEmail: formData.contactEmail || null,
+          contactSocial: formData.contactSocial || null,
+          locationPrecise: preciselocation && locationCoords !== null,
+          locationCoords,
+          deviceInfo,
+          timezone,
+          timezoneOffset,
+          languages,
+        }),
+      });
+
+      const result: SubmissionResponse = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit');
+      }
+
+      setSubmissionResult(result);
+      setShowConsentModal(false);
+      setIsSubmitted(true);
+
+    } catch (err) {
+      console.error('Submission error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setShowConsentModal(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -745,15 +868,18 @@ export default function ContactSection() {
       audioBlob: null,
       audioDuration: 0,
       selfieDataUrl: null,
+      contactEmail: '',
+      contactSocial: '',
     });
     setIsSubmitted(false);
+    setSubmissionResult(null);
+    setError(null);
   };
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-dark-900 py-20">
       {/* Background effects */}
       <div className="pointer-events-none absolute inset-0">
-        {/* Grid pattern */}
         <div
           className="absolute inset-0 opacity-5"
           style={{
@@ -762,8 +888,6 @@ export default function ContactSection() {
             backgroundSize: '50px 50px',
           }}
         />
-        
-        {/* Gradient orbs */}
         <div className="absolute -left-40 top-20 h-80 w-80 rounded-full bg-terminal-green/5 blur-3xl" />
         <div className="absolute -right-40 bottom-20 h-80 w-80 rounded-full bg-neon-cyan/5 blur-3xl" />
       </div>
@@ -801,6 +925,23 @@ export default function ContactSection() {
           </p>
         </motion.div>
 
+        {/* Error message */}
+        {error && (
+          <motion.div
+            className="mb-6 rounded-lg border border-neon-pink/30 bg-neon-pink/5 p-4 text-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p className="font-mono text-sm text-neon-pink">{error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="mt-2 font-mono text-xs text-gray-400 underline hover:text-white"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
+
         {/* Form */}
         <AnimatePresence mode="wait">
           {isSubmitted ? (
@@ -824,11 +965,32 @@ export default function ContactSection() {
               <h3 className="mb-2 font-mono text-2xl font-bold text-terminal-green">
                 Message Transmitted!
               </h3>
-              <p className="mb-6 font-mono text-sm text-gray-400">
-                Your message has been beamed across the digital void.
-                <br />
+              <p className="mb-4 font-mono text-sm text-gray-400">
+                {successMessage}
+              </p>
+              
+              {/* Location info */}
+              {submissionResult?.location && (
+                <motion.div
+                  className="mb-6 inline-block rounded-lg border border-terminal-green/20 bg-dark-900/50 px-4 py-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <p className="font-mono text-xs text-gray-500">
+                    📍 Transmitted from{' '}
+                    <span className="text-terminal-green">
+                      {submissionResult.location.city || 'Unknown'}, {submissionResult.location.country || 'Unknown'}
+                    </span>
+                    {' '}({submissionResult.location.source === 'gps' ? 'GPS' : 'IP'})
+                  </p>
+                </motion.div>
+              )}
+
+              <p className="mb-6 font-mono text-xs text-gray-500">
                 Avan will get back to you faster than a compile error.
               </p>
+              
               <motion.button
                 onClick={handleReset}
                 className="rounded-lg border border-terminal-green/30 px-6 py-2 font-mono text-sm text-terminal-green transition-all hover:bg-terminal-green/10"
@@ -841,7 +1003,7 @@ export default function ContactSection() {
           ) : (
             <motion.form
               key="form"
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmitClick}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -863,12 +1025,55 @@ export default function ContactSection() {
                   }
                   placeholder={placeholder}
                   required
+                  disabled={isSubmitting}
                   rows={5}
-                  className="w-full resize-none rounded-lg border border-terminal-green/20 bg-dark-900/50 p-4 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30"
+                  className="w-full resize-none rounded-lg border border-terminal-green/20 bg-dark-900/50 p-4 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <p className="text-right font-mono text-xs text-gray-500">
                   {formData.message.length} characters
                 </p>
+              </div>
+
+              {/* Contact fields (optional) */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="block font-mono text-sm text-terminal-green/80"
+                  >
+                    Email <span className="text-gray-500">(optional)</span>
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.contactEmail}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactEmail: e.target.value })
+                    }
+                    placeholder="you@example.com"
+                    disabled={isSubmitting}
+                    className="w-full rounded-lg border border-terminal-green/20 bg-dark-900/50 p-3 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="social"
+                    className="block font-mono text-sm text-terminal-green/80"
+                  >
+                    Social <span className="text-gray-500">(optional)</span>
+                  </label>
+                  <input
+                    id="social"
+                    type="text"
+                    value={formData.contactSocial}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactSocial: e.target.value })
+                    }
+                    placeholder="@username or LinkedIn URL"
+                    disabled={isSubmitting}
+                    className="w-full rounded-lg border border-terminal-green/20 bg-dark-900/50 p-3 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  />
+                </div>
               </div>
 
               {/* Audio Recorder */}
@@ -880,6 +1085,7 @@ export default function ContactSection() {
                     audioDuration: duration,
                   })
                 }
+                disabled={isSubmitting}
               />
 
               {/* Selfie Capture */}
@@ -887,6 +1093,7 @@ export default function ContactSection() {
                 onCapture={(dataUrl) =>
                   setFormData({ ...formData, selfieDataUrl: dataUrl })
                 }
+                disabled={isSubmitting}
               />
 
               {/* Submit Button */}
@@ -897,7 +1104,6 @@ export default function ContactSection() {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
               >
-                {/* Animated background */}
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-neon-cyan to-terminal-green"
                   animate={{
@@ -912,27 +1118,13 @@ export default function ContactSection() {
                 />
 
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {isSubmitting ? (
-                    <>
-                      <motion.span
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      >
-                        ⚡
-                      </motion.span>
-                      Transmitting...
-                    </>
-                  ) : (
-                    <>
-                      Send Message
-                      <motion.span
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                      >
-                        →
-                      </motion.span>
-                    </>
-                  )}
+                  Transmit to Lab
+                  <motion.span
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  >
+                    →
+                  </motion.span>
                 </span>
               </motion.button>
 
@@ -957,6 +1149,17 @@ export default function ContactSection() {
           </p>
         </motion.div>
       </div>
+
+      {/* Consent Modal */}
+      <MetadataConsentModal
+        isOpen={showConsentModal}
+        onClose={() => {
+          setShowConsentModal(false);
+          setIsSubmitting(false);
+        }}
+        onConsent={handleConsent}
+        isLoading={isSubmitting}
+      />
     </section>
   );
 }
