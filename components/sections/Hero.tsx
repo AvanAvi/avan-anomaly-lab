@@ -1,89 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTransition } from "@/app/transition-provider";
+import Reveal from "@/components/ui/Reveal";
+import SignalButton from "@/components/ui/SignalButton";
 
 export default function Hero() {
-  const [text, setText] = useState("");
-  const fullText = "Avan's Anomaly Lab";
-  const [showCursor, setShowCursor] = useState(true);
+  const { startTransition } = useTransition();
 
-  // Typing effect
-  useEffect(() => {
-    let currentIndex = 0;
-    const typingInterval = setInterval(() => {
-      if (currentIndex <= fullText.length) {
-        setText(fullText.slice(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(typingInterval);
-      }
-    }, 150);
+  const scrollToProjects = () => {
+    document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    return () => clearInterval(typingInterval);
-  }, []);
-
-  // Cursor blink
-  useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor((prev) => !prev);
-    }, 500);
-
-    return () => clearInterval(cursorInterval);
-  }, []);
+  const openPhilosophy = () => {
+    startTransition("/philosophy", "philosophy");
+  };
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-16">
-      {/* Grid background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#00ff4110_1px,transparent_1px),linear-gradient(to_bottom,#00ff4110_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-
-      {/* Content */}
-      <div className="relative z-10 text-center">
-        {/* Main Title */}
-        <h1 className="mb-6 font-mono text-5xl font-bold text-terminal-green md:text-7xl lg:text-8xl">
-          <span className="inline-block" data-text={text}>
-            {text}
-          </span>
-          {showCursor && (
-            <span className="inline-block animate-flicker text-terminal-green">
-              ▋
-            </span>
-          )}
-        </h1>
-
-        {/* Subtitle */}
-        <div className="mb-8 space-y-2 font-mono text-lg text-terminal-green md:text-xl">
-          <p className="animate-pulse">
-            {">"} [████░░░░] Engineer | [████████░] Philosopher | [████░░░░] ¯\_(ツ)_/¯
+    <section className="relative flex min-h-screen items-center overflow-hidden px-6 pt-20 md:px-12 lg:px-20">
+      <div className="relative z-10 max-w-2xl">
+        <Reveal>
+          <p className="font-mono text-xs tracking-[0.3em] text-signal/70">
+            AVAN · ANOMALY LAB
           </p>
-          <p className="text-terminal-amber">
-            {">"} Breaking the fourth wall of conventional science
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <h1 className="mt-6 font-display text-6xl leading-[1.05] text-white sm:text-7xl lg:text-8xl">
+            Engineering,
+            <br />
+            <span className="italic text-signal">examined.</span>
+          </h1>
+        </Reveal>
+
+        <Reveal delay={0.2}>
+          <p className="mt-8 max-w-lg font-sans text-lg leading-relaxed text-white/60">
+            Software engineering, applied philosophy, and the occasional
+            experiment that should not work. This is where I test all three.
           </p>
-        </div>
+        </Reveal>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button className="group relative overflow-hidden border-2 border-terminal-green bg-transparent px-8 py-3 font-mono text-terminal-green transition-all hover:bg-terminal-green hover:text-dark-900">
-            <span className="relative z-10">Explore Projects</span>
-            <div className="absolute inset-0 -translate-x-full bg-terminal-green transition-transform group-hover:translate-x-0" />
-          </button>
+        <Reveal delay={0.3}>
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <SignalButton variant="primary" onClick={scrollToProjects}>
+              View the work
+            </SignalButton>
+            <SignalButton variant="ghost" onClick={openPhilosophy}>
+              Read the philosophy
+            </SignalButton>
+          </div>
+        </Reveal>
 
-          <button className="border-2 border-neon-pink bg-transparent px-8 py-3 font-mono text-neon-pink transition-all hover:bg-neon-pink hover:text-dark-900">
-            Read Philosophy
-          </button>
-        </div>
-
-        {/* Status indicator */}
-        <div className="mt-12 flex items-center justify-center gap-2 font-mono text-sm text-terminal-green/60">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-terminal-green" />
-          <span>System Status: OPERATIONAL</span>
-        </div>
+        <Reveal delay={0.4}>
+          <div className="mt-16 flex items-center gap-2.5 font-mono text-xs text-white/40">
+            <span className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_8px_rgba(110,231,192,0.8)]" />
+            STATUS · OPERATIONAL
+          </div>
+        </Reveal>
       </div>
 
-      {/* Corner decorations */}
-      <div className="pointer-events-none absolute left-4 top-4 h-16 w-16 border-l-2 border-t-2 border-terminal-green opacity-50" />
-      <div className="pointer-events-none absolute right-4 top-4 h-16 w-16 border-r-2 border-t-2 border-terminal-green opacity-50" />
-      <div className="pointer-events-none absolute bottom-4 left-4 h-16 w-16 border-b-2 border-l-2 border-terminal-green opacity-50" />
-      <div className="pointer-events-none absolute bottom-4 right-4 h-16 w-16 border-b-2 border-r-2 border-terminal-green opacity-50" />
+      {/* Instrument frame ticks, restrained corner marks rather than full borders */}
+      <div className="pointer-events-none absolute left-6 top-20 h-8 w-px bg-line-strong md:left-12" />
+      <div className="pointer-events-none absolute left-6 top-20 h-px w-8 bg-line-strong md:left-12" />
+      <div className="pointer-events-none absolute bottom-10 right-6 h-8 w-px bg-line-strong md:right-12" />
+      <div className="pointer-events-none absolute bottom-10 right-6 h-px w-8 bg-line-strong md:right-12" />
+
+      {/* Scroll cue */}
+      <div className="pointer-events-none absolute bottom-10 left-6 hidden items-center gap-3 font-mono text-[11px] tracking-[0.2em] text-white/30 md:left-12 lg:flex">
+        <span className="h-8 w-px animate-pulse bg-white/20" />
+        SCROLL
+      </div>
     </section>
   );
 }

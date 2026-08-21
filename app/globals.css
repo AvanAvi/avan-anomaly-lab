@@ -18,40 +18,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* CRT Screen Effect - Reduce GPU usage */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: linear-gradient(
-      rgba(18, 16, 16, 0) 50%,
-      rgba(0, 0, 0, 0.25) 50%
-    );
-    background-size: 100% 4px;
-    z-index: 9999;
-    pointer-events: none;
-    animation: scan 8s linear infinite;
-    will-change: transform;
-  }
-  
-  /* Subtle screen glow */
-  body::after {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: radial-gradient(
-      ellipse at center,
-      rgba(0, 255, 65, 0.05) 0%,
-      transparent 60%
-    );
-    pointer-events: none;
-    z-index: 9998;
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -106,6 +81,18 @@
   
   .animate-fadeIn {
     animation: fadeIn 1s ease-out;
+  }
+
+  /* Used by staggered list reveals across several pages/components */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes floatToCenter {

@@ -1,44 +1,35 @@
 "use client";
 
-import { Suspense, lazy } from "react";
 import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Writings from "@/components/sections/Writings";
 import Navbar from "@/components/layout/Navbar";
 import Projects from "@/components/sections/Projects";
-import ContactSection from '@/components/sections/ContactSection';
-
-// Lazy load heavy 3D components for better performance
-const PrometheusReactor = lazy(() => import("@/components/effects/PrometheusReactor"));
+import ContactSection from "@/components/sections/ContactSection";
+import FieldBackground from "@/components/effects/FieldBackground";
 
 export default function Home() {
   return (
     <>
       <Navbar />
       <main className="min-h-screen scroll-smooth">
-        {/* Fixed positioning prevents layout shifts during loading */}
-        <div className="fixed inset-0 -z-10">
-          <Suspense fallback={null}>
-            <PrometheusReactor />
-          </Suspense>
-        </div>
-        
-        <div id="home">
+        <FieldBackground />
+
+        <div id="home" className="scroll-mt-20">
           <Hero />
         </div>
-        <div id="about">
+        <div id="about" className="scroll-mt-20">
           <About />
         </div>
-        <div id="writings">
+        <div id="writings" className="scroll-mt-20">
           <Writings />
         </div>
-        <div id="projects">
+        <div id="projects" className="scroll-mt-20">
           <Projects />
         </div>
-        <div id="contact">
+        <div id="contact" className="scroll-mt-20">
           <ContactSection />
         </div>
-
       </main>
     </>
   );
