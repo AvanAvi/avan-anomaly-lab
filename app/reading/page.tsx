@@ -3,6 +3,8 @@
 import BackLink from "@/components/ui/BackLink";
 import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
+import StatusBadge from "@/components/ui/StatusBadge";
+import TagChip from "@/components/ui/TagChip";
 
 interface Book {
   id: number;
@@ -91,11 +93,11 @@ const BOOKS: Book[] = [
   },
 ];
 
-const STATUS_STYLES: Record<Book["status"], string> = {
-  Completed: "border-signal/40 bg-signal/5 text-signal",
-  "In Progress": "border-terminal-amber/40 bg-terminal-amber/5 text-terminal-amber",
-  "Re-reading": "border-terminal-amber/40 bg-terminal-amber/5 text-terminal-amber",
-  Wishlist: "border-line-strong text-white/50",
+const STATUS_TONE: Record<Book["status"], "positive" | "active" | "neutral"> = {
+  Completed: "positive",
+  "In Progress": "active",
+  "Re-reading": "active",
+  Wishlist: "neutral",
 };
 
 function Rating({ value }: { value: number | null }) {
@@ -137,9 +139,7 @@ export default function ReadingPage() {
               <Reveal key={book.id} delay={Math.min(index * 0.06, 0.3)}>
                 <article className="border border-line p-6 transition-colors duration-300 hover:border-line-strong md:p-8">
                   <div className="mb-4 flex flex-wrap items-center gap-3 font-mono text-xs">
-                    <span className={`border px-2.5 py-1 font-medium ${STATUS_STYLES[book.status]}`}>
-                      {book.status}
-                    </span>
+                    <StatusBadge tone={STATUS_TONE[book.status]}>{book.status}</StatusBadge>
                     <span className="text-white/40">{book.genre}</span>
                     <span className="text-white/20">·</span>
                     <span className="text-white/40">{book.date}</span>
@@ -158,12 +158,7 @@ export default function ReadingPage() {
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     {book.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="border border-line px-2 py-1 font-mono text-[11px] text-white/40"
-                      >
-                        {tag}
-                      </span>
+                      <TagChip key={tag}>{tag}</TagChip>
                     ))}
                   </div>
                 </article>

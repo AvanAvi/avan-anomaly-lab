@@ -3,6 +3,7 @@
 import BackLink from "@/components/ui/BackLink";
 import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
+import TagChip from "@/components/ui/TagChip";
 
 // Placeholder entries. Swap in real writing when it exists; until then
 // each card is marked so nothing here reads as a published article.
@@ -59,12 +60,7 @@ export default function SciencePage() {
                   </p>
                   <div className="mt-5 flex flex-wrap gap-2">
                     {article.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="border border-line px-2 py-1 font-mono text-[11px] text-white/40"
-                      >
-                        {tag}
-                      </span>
+                      <TagChip key={tag}>{tag}</TagChip>
                     ))}
                   </div>
                 </article>
