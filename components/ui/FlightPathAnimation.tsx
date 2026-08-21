@@ -117,7 +117,7 @@ export default function FlightPathAnimation({
 
   return (
     <motion.div
-      className="my-6 overflow-hidden rounded-xl border border-terminal-green/30 bg-dark-800/50 p-4"
+      className="my-6 overflow-hidden border border-signal/30 bg-ink-900/50 p-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.5 }}
@@ -134,7 +134,7 @@ export default function FlightPathAnimation({
           <motion.path
             d="M 30 45 Q 150 -10 270 45"
             fill="none"
-            stroke="rgba(0, 255, 65, 0.3)"
+            stroke="rgba(110, 231, 192, 0.3)"
             strokeWidth="2"
             strokeDasharray="5,5"
             initial={{ pathLength: 0 }}
@@ -169,11 +169,11 @@ export default function FlightPathAnimation({
           transition={{ delay: 0.2, duration: 0.3 }}
         >
           <div className="text-xl">📍</div>
-          <p className="font-mono text-[10px] text-terminal-green">
+          <p className="font-mono text-[10px] text-signal">
             {userCity}
           </p>
           {userCountry && (
-            <p className="font-mono text-[8px] text-gray-500">{userCountry}</p>
+            <p className="font-mono text-[8px] text-white/40">{userCountry}</p>
           )}
         </motion.div>
 
@@ -185,10 +185,10 @@ export default function FlightPathAnimation({
           transition={{ delay: 0.4, duration: 0.3 }}
         >
           <div className="text-xl">🏖️</div>
-          <p className="font-mono text-[10px] text-neon-cyan">
+          <p className="font-mono text-[10px] text-signal">
             {LAB_LOCATION.name}
           </p>
-          <p className="font-mono text-[8px] text-gray-500">
+          <p className="font-mono text-[8px] text-white/40">
             {LAB_LOCATION.country}
           </p>
         </motion.div>
@@ -201,9 +201,9 @@ export default function FlightPathAnimation({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
       >
-        <p className="font-mono text-xs text-gray-400">Your message traveled</p>
+        <p className="font-mono text-xs text-white/50">Your message traveled</p>
         <motion.p
-          className="font-mono text-3xl font-bold text-terminal-green"
+          className="font-mono text-3xl font-bold text-signal"
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.6, type: 'spring' }}
@@ -214,18 +214,18 @@ export default function FlightPathAnimation({
 
       {/* Cheeky Message */}
       <motion.div
-        className="rounded-lg border border-terminal-amber/20 bg-terminal-amber/5 p-3"
+        className="border border-terminal-amber/20 bg-terminal-amber/5 p-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: animationPhase >= 2 ? 1 : 0, y: animationPhase >= 2 ? 0 : 10 }}
         transition={{ duration: 0.5 }}
       >
-        <p className="font-mono text-xs leading-relaxed text-gray-400">
+        <p className="font-mono text-xs leading-relaxed text-white/50">
           <span className="text-terminal-amber">Psst.</span> You didn&apos;t hear this from me, 
           but the crackhead who built this site? Currently unreachable. Last seen: 
-          <span className="text-neon-cyan"> Plage de la Croisette, Cannes</span>. 
+          <span className="text-signal"> Plage de la Croisette, Cannes</span>. 
           Doing... let&apos;s say <span className="italic">&quot;research.&quot;</span>
         </p>
-        <p className="mt-2 font-mono text-xs leading-relaxed text-gray-500">
+        <p className="mt-2 font-mono text-xs leading-relaxed text-white/40">
           I&apos;m just the website, I don&apos;t judge. But I DO deliver messages. 
           Eventually. When he checks his phone. <span className="italic">If</span> he checks his phone. 😎🍷
         </p>

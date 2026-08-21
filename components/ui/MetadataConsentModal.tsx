@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Monitor, Clock, Globe, Lock, Loader2 } from 'lucide-react';
 
 // ============================================
 // TYPES
@@ -57,39 +58,39 @@ export default function MetadataConsentModal({
               transition={{ type: 'spring', damping: 30, stiffness: 400 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative rounded-xl border border-terminal-green/30 bg-dark-900 shadow-2xl shadow-terminal-green/10">
+              <div className="relative border border-signal/30 bg-ink-950 shadow-2xl shadow-signal/10">
               {/* Content */}
               <div className="p-6">
                 {/* Title */}
                 <div className="mb-5 text-center">
-                  <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-terminal-green/30 bg-terminal-green/10 px-3 py-1">
-                    <span className="text-base">🛰️</span>
-                    <span className="font-mono text-xs font-medium text-terminal-green">
+                  <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-signal/30 bg-signal/10 px-3 py-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_6px_rgba(110,231,192,0.8)]" />
+                    <span className="font-mono text-xs font-medium text-signal">
                       TRANSMISSION METADATA
                     </span>
                   </div>
-                  <p className="mt-2 font-mono text-xs text-gray-400">
+                  <p className="mt-2 font-mono text-xs text-white/50">
                     The Lab logs contextual data with your message
                   </p>
                 </div>
 
                 {/* Data list - Compact 2x2 grid */}
-                <div className="mb-5 rounded-lg border border-terminal-green/20 bg-dark-800/50 p-4">
+                <div className="mb-5 border border-signal/20 bg-ink-900/50 p-4">
                   <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <span className="text-terminal-green">📍</span>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <MapPin className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
                       <span>Location</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <span className="text-terminal-green">🖥️</span>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Monitor className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
                       <span>Device info</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <span className="text-terminal-green">🕐</span>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Clock className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
                       <span>Timezone</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <span className="text-terminal-green">🌐</span>
+                    <div className="flex items-center gap-2 text-white/70">
+                      <Globe className="h-3.5 w-3.5 text-signal" aria-hidden="true" />
                       <span>Language</span>
                     </div>
                   </div>
@@ -98,7 +99,7 @@ export default function MetadataConsentModal({
                   <button
                     type="button"
                     onClick={() => setShowDetails(!showDetails)}
-                    className="mt-3 w-full text-left font-mono text-xs text-gray-500 transition-colors hover:text-terminal-green"
+                    className="mt-3 w-full text-left font-mono text-xs text-white/40 transition-colors hover:text-signal"
                   >
                     {showDetails ? '▼ Hide' : '▶ What we DON\'T collect'}
                   </button>
@@ -111,8 +112,8 @@ export default function MetadataConsentModal({
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <p className="mt-2 font-mono text-xs text-gray-500">
-                          ❌ Browsing history ❌ Other tabs ❌ Files ❌ Anything else
+                        <p className="mt-2 font-mono text-xs text-white/40">
+                          × Browsing history × Other tabs × Files × Anything else
                         </p>
                       </motion.div>
                     )}
@@ -120,9 +121,9 @@ export default function MetadataConsentModal({
                 </div>
 
                 {/* GPS Teaser */}
-                <div className="mb-5 rounded-lg border border-neon-cyan/20 bg-neon-cyan/5 p-3">
-                  <p className="font-mono text-xs text-neon-cyan/80">
-                    ✨ <span className="font-bold">Share GPS</span> and we&apos;ll show you how far your message travels to reach the Lab!
+                <div className="mb-5 border border-signal/20 bg-signal/5 p-3">
+                  <p className="font-mono text-xs text-signal/80">
+                    <span className="font-bold">Share GPS</span> and we&apos;ll show you how far your message travels to reach the Lab.
                   </p>
                 </div>
 
@@ -132,14 +133,14 @@ export default function MetadataConsentModal({
                     type="button"
                     onClick={() => onConsent(true)}
                     disabled={isLoading}
-                    className="group relative overflow-hidden rounded-lg border border-terminal-green/50 bg-terminal-green/10 py-4 font-mono transition-all hover:bg-terminal-green/20 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group relative overflow-hidden border border-signal/50 bg-signal/10 py-4 font-mono transition-all hover:bg-signal/20 disabled:cursor-not-allowed disabled:opacity-50"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span className="relative z-10 flex flex-col items-center gap-1 text-terminal-green">
-                      <span className="text-2xl">📍</span>
+                    <span className="relative z-10 flex flex-col items-center gap-1.5 text-signal">
+                      <MapPin className="h-5 w-5" aria-hidden="true" />
                       <span className="text-xs font-bold">Precise</span>
-                      <span className="text-[10px] text-terminal-green/60">GPS</span>
+                      <span className="text-[10px] text-signal/60">GPS</span>
                     </span>
                   </motion.button>
 
@@ -147,14 +148,14 @@ export default function MetadataConsentModal({
                     type="button"
                     onClick={() => onConsent(false)}
                     disabled={isLoading}
-                    className="group relative overflow-hidden rounded-lg border border-gray-600/50 bg-dark-800/50 py-4 font-mono transition-all hover:border-gray-500/50 hover:bg-dark-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group relative overflow-hidden border border-line-strong/50 bg-ink-900/50 py-4 font-mono transition-all hover:border-line-strong hover:bg-ink-900 disabled:cursor-not-allowed disabled:opacity-50"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span className="relative z-10 flex flex-col items-center gap-1 text-gray-300">
-                      <span className="text-2xl">🌐</span>
+                    <span className="relative z-10 flex flex-col items-center gap-1.5 text-white/70">
+                      <Globe className="h-5 w-5" aria-hidden="true" />
                       <span className="text-xs font-bold">Approximate</span>
-                      <span className="text-[10px] text-gray-500">IP-based</span>
+                      <span className="text-[10px] text-white/40">IP-based</span>
                     </span>
                   </motion.button>
                 </div>
@@ -168,10 +169,11 @@ export default function MetadataConsentModal({
                   >
                     <div className="inline-flex items-center gap-2 font-mono text-sm text-terminal-amber">
                       <motion.span
+                        className="flex"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       >
-                        ⚡
+                        <Loader2 className="h-4 w-4" aria-hidden="true" />
                       </motion.span>
                       Transmitting...
                     </div>
@@ -179,10 +181,13 @@ export default function MetadataConsentModal({
                 )}
 
                 {/* Privacy notice - Compact */}
-                <div className="rounded-lg border border-terminal-green/10 bg-terminal-green/5 p-3">
-                  <p className="font-mono text-[10px] leading-relaxed text-gray-500">
-                    <span className="font-bold text-terminal-green">🔒</span> AES-256 encrypted. Never sold. Deleted on request.
-                    Also backed up on a physical drive Avan maintains himself — old school, paranoid, secure.
+                <div className="border border-signal/10 bg-signal/5 p-3">
+                  <p className="flex items-start gap-1.5 font-mono text-[10px] leading-relaxed text-white/40">
+                    <Lock className="mt-0.5 h-3 w-3 shrink-0 text-signal" aria-hidden="true" />
+                    <span>
+                      AES-256 encrypted. Never sold. Deleted on request.
+                      Also backed up on a physical drive Avan maintains himself, old school, paranoid, secure.
+                    </span>
                   </p>
                 </div>
 
@@ -191,17 +196,17 @@ export default function MetadataConsentModal({
                   type="button"
                   onClick={onClose}
                   disabled={isLoading}
-                  className="mt-4 w-full py-2 font-mono text-xs text-gray-500 transition-colors hover:text-gray-300 disabled:cursor-not-allowed"
+                  className="mt-4 w-full py-2 font-mono text-xs text-white/40 transition-colors hover:text-white/70 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
               </div>
 
               {/* Corner decorations */}
-              <div className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l border-t border-terminal-green/30" />
-              <div className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r border-t border-terminal-green/30" />
-              <div className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b border-l border-terminal-green/30" />
-              <div className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b border-r border-terminal-green/30" />
+              <div className="pointer-events-none absolute left-0 top-0 h-5 w-5 border-l border-t border-signal/30" />
+              <div className="pointer-events-none absolute right-0 top-0 h-5 w-5 border-r border-t border-signal/30" />
+              <div className="pointer-events-none absolute bottom-0 left-0 h-5 w-5 border-b border-l border-signal/30" />
+              <div className="pointer-events-none absolute bottom-0 right-0 h-5 w-5 border-b border-r border-signal/30" />
             </div>
             </motion.div>
           </motion.div>

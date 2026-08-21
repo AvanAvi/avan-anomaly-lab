@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, Camera, MapPin } from 'lucide-react';
 import MetadataConsentModal from '@/components/ui/MetadataConsentModal';
 import FlightPathAnimation from '@/components/ui/FlightPathAnimation';
+import Reveal from '@/components/ui/Reveal';
+import SignalButton from '@/components/ui/SignalButton';
 
 // ============================================
 // TYPES
@@ -255,9 +258,9 @@ function AudioRecorder({
 
   if (permissionDenied) {
     return (
-      <div className="rounded-lg border border-neon-pink/30 bg-neon-pink/5 p-4 text-center">
-        <p className="font-mono text-sm text-neon-pink">
-          🎤 Microphone access denied. Check your browser permissions!
+      <div className="border border-alert/30 bg-alert/5 p-4 text-center">
+        <p className="font-mono text-sm text-alert">
+          Microphone access denied. Check your browser permissions.
         </p>
       </div>
     );
@@ -265,18 +268,18 @@ function AudioRecorder({
 
   return (
     <div className="space-y-3">
-      <label className="block font-mono text-sm text-terminal-green/80">
-        Audio Note <span className="text-gray-500">(optional, max 1 min)</span>
+      <label className="block font-mono text-sm text-signal/80">
+        Audio Note <span className="text-white/40">(optional, max 1 min)</span>
       </label>
       
-      <div className="relative overflow-hidden rounded-lg border border-terminal-green/30 bg-dark-800/50 p-4">
+      <div className="relative overflow-hidden border border-signal/30 bg-ink-900/50 p-4">
         {/* Waveform visualization */}
         {isRecording && (
           <div className="absolute inset-0 flex items-center justify-center opacity-20">
             {[...Array(20)].map((_, i) => (
               <motion.div
                 key={i}
-                className="mx-0.5 w-1 rounded-full bg-terminal-green"
+                className="mx-0.5 w-1 rounded-full bg-signal"
                 animate={{
                   height: [10, 30 + Math.random() * 20, 10],
                 }}
@@ -299,10 +302,10 @@ function AudioRecorder({
               disabled={hasRecording || disabled}
               className={`flex h-14 w-14 items-center justify-center rounded-full transition-all ${
                 isRecording 
-                  ? 'bg-neon-pink shadow-[0_0_20px_rgba(255,0,110,0.5)]' 
+                  ? 'bg-alert shadow-[0_0_20px_rgba(229,72,77,0.5)]'
                   : hasRecording || disabled
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-terminal-green/20 hover:bg-terminal-green/30'
+                  ? 'bg-line-strong cursor-not-allowed'
+                  : 'bg-signal/20 hover:bg-signal/30'
               }`}
               whileHover={!hasRecording && !disabled ? { scale: 1.05 } : {}}
               whileTap={!hasRecording && !disabled ? { scale: 0.95 } : {}}
@@ -314,7 +317,7 @@ function AudioRecorder({
                   transition={{ duration: 0.5, repeat: Infinity }}
                 />
               ) : (
-                <div className="h-5 w-5 rounded-full bg-neon-pink" />
+                <div className="h-5 w-5 rounded-full bg-alert" />
               )}
             </motion.button>
 
@@ -323,25 +326,25 @@ function AudioRecorder({
               {isRecording ? (
                 <div>
                   <motion.p 
-                    className="font-mono text-lg text-terminal-green"
+                    className="font-mono text-lg text-signal"
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   >
                     {formatTime(duration)} / {formatTime(MAX_DURATION)}
                   </motion.p>
-                  <p className="font-mono text-xs text-gray-500">{encouragement}</p>
+                  <p className="font-mono text-xs text-white/40">{encouragement}</p>
                 </div>
               ) : hasRecording ? (
                 <div>
-                  <p className="font-mono text-lg text-terminal-green">
+                  <p className="font-mono text-lg text-signal">
                     ✓ {formatTime(duration)} recorded
                   </p>
-                  <p className="font-mono text-xs text-gray-500">Ready to transmit</p>
+                  <p className="font-mono text-xs text-white/40">Ready to transmit</p>
                 </div>
               ) : (
                 <div>
-                  <p className="font-mono text-sm text-gray-400">Tap to record</p>
-                  <p className="font-mono text-xs text-gray-500">Add a voice message</p>
+                  <p className="font-mono text-sm text-white/50">Tap to record</p>
+                  <p className="font-mono text-xs text-white/40">Add a voice message</p>
                 </div>
               )}
             </div>
@@ -353,7 +356,7 @@ function AudioRecorder({
               type="button"
               onClick={clearRecording}
               disabled={disabled}
-              className="rounded-lg border border-gray-600 px-3 py-1 font-mono text-xs text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
+              className="border border-line-strong px-3 py-1 font-mono text-xs text-white/50 transition-all hover:border-alert/50 hover:text-alert disabled:cursor-not-allowed disabled:opacity-50"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               whileHover={{ scale: 1.05 }}
@@ -551,9 +554,9 @@ function SelfieCapture({
 
   if (permissionDenied) {
     return (
-      <div className="rounded-lg border border-neon-pink/30 bg-neon-pink/5 p-4 text-center">
-        <p className="font-mono text-sm text-neon-pink">
-          📷 Camera access denied. Check your browser permissions!
+      <div className="border border-alert/30 bg-alert/5 p-4 text-center">
+        <p className="font-mono text-sm text-alert">
+          Camera access denied. Check your browser permissions.
         </p>
       </div>
     );
@@ -561,13 +564,13 @@ function SelfieCapture({
 
   return (
     <div className="space-y-3">
-      <label className="block font-mono text-sm text-terminal-green/80">
-        Selfie <span className="text-gray-500">(optional, captured live)</span>
+      <label className="block font-mono text-sm text-signal/80">
+        Selfie <span className="text-white/40">(optional, captured live)</span>
       </label>
 
       {captureError && (
         <motion.div 
-          className="rounded-lg border border-terminal-amber/30 bg-terminal-amber/5 p-3"
+          className="border border-terminal-amber/30 bg-terminal-amber/5 p-3"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -576,7 +579,7 @@ function SelfieCapture({
             type="button"
             onClick={retakeSelfie}
             disabled={disabled}
-            className="mt-2 font-mono text-xs text-terminal-green underline disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-2 font-mono text-xs text-signal underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             Try again
           </button>
@@ -590,29 +593,29 @@ function SelfieCapture({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative overflow-hidden rounded-lg border-2 border-terminal-green/50 bg-dark-800"
+            className="relative overflow-hidden border-2 border-signal/50 bg-ink-900"
           >
             {/* Retro camera overlay */}
             <div className="pointer-events-none absolute inset-0 z-10">
               <div className="absolute left-2 top-2 flex items-center gap-2">
                 <motion.div
-                  className="h-3 w-3 rounded-full bg-neon-pink"
+                  className="h-3 w-3 rounded-full bg-alert"
                   animate={{ opacity: [1, 0.3, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                <span className="font-mono text-xs text-neon-pink">REC</span>
+                <span className="font-mono text-xs text-alert">REC</span>
               </div>
-              <div className="absolute right-2 top-2 font-mono text-xs text-terminal-green/60">
+              <div className="absolute right-2 top-2 font-mono text-xs text-signal/60">
                 ANOMALY CAM™
               </div>
-              <div className="absolute bottom-2 left-2 font-mono text-xs text-gray-500">
+              <div className="absolute bottom-2 left-2 font-mono text-xs text-white/40">
                 {new Date().toLocaleTimeString()}
               </div>
               {/* Corner brackets */}
-              <div className="absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-terminal-green/50" />
-              <div className="absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-terminal-green/50" />
-              <div className="absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-terminal-green/50" />
-              <div className="absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-terminal-green/50" />
+              <div className="absolute left-4 top-4 h-8 w-8 border-l-2 border-t-2 border-signal/50" />
+              <div className="absolute right-4 top-4 h-8 w-8 border-r-2 border-t-2 border-signal/50" />
+              <div className="absolute bottom-4 left-4 h-8 w-8 border-b-2 border-l-2 border-signal/50" />
+              <div className="absolute bottom-4 right-4 h-8 w-8 border-b-2 border-r-2 border-signal/50" />
             </div>
 
             <video
@@ -632,7 +635,7 @@ function SelfieCapture({
               >
                 <motion.span
                   key={countdown}
-                  className="font-mono text-8xl font-bold text-terminal-green"
+                  className="font-mono text-8xl font-bold text-signal"
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 1.5, opacity: 0 }}
@@ -653,12 +656,12 @@ function SelfieCapture({
             )}
 
             {/* Controls */}
-            <div className="flex justify-center gap-4 bg-dark-900/80 p-4">
+            <div className="flex justify-center gap-4 bg-ink-950/80 p-4">
               <motion.button
                 type="button"
                 onClick={closeCamera}
                 disabled={disabled}
-                className="rounded-lg border border-gray-600 px-4 py-2 font-mono text-sm text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
+                className="border border-line-strong px-4 py-2 font-mono text-sm text-white/50 transition-all hover:border-alert/50 hover:text-alert disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -668,11 +671,11 @@ function SelfieCapture({
                 type="button"
                 onClick={startCountdown}
                 disabled={countdown !== null || disabled}
-                className="rounded-lg bg-terminal-green px-6 py-2 font-mono text-sm font-bold text-dark-900 transition-all hover:bg-terminal-green/90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-signal px-6 py-2 font-mono text-sm font-bold text-ink-950 transition-all hover:bg-signal/90 disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {countdown !== null ? 'Get Ready!' : '📸 Capture'}
+                {countdown !== null ? 'Get Ready!' : 'Capture'}
               </motion.button>
             </div>
           </motion.div>
@@ -682,7 +685,7 @@ function SelfieCapture({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative overflow-hidden rounded-lg border border-terminal-green/30 bg-dark-800"
+            className="relative overflow-hidden border border-signal/30 bg-ink-900"
           >
             <img 
               src={capturedImage} 
@@ -691,17 +694,17 @@ function SelfieCapture({
             />
             
             {/* Caption overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark-900 to-transparent p-4">
-              <p className="font-mono text-xs text-terminal-green/80">{selfieCaption}</p>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-ink-950 to-transparent p-4">
+              <p className="font-mono text-xs text-signal/80">{selfieCaption}</p>
             </div>
 
             {/* Action buttons */}
-            <div className="flex justify-end gap-2 bg-dark-900/80 p-3">
+            <div className="flex justify-end gap-2 bg-ink-950/80 p-3">
               <motion.button
                 type="button"
                 onClick={clearSelfie}
                 disabled={disabled}
-                className="rounded-lg border border-gray-600 px-3 py-1 font-mono text-xs text-gray-400 transition-all hover:border-neon-pink/50 hover:text-neon-pink disabled:cursor-not-allowed disabled:opacity-50"
+                className="border border-line-strong px-3 py-1 font-mono text-xs text-white/50 transition-all hover:border-alert/50 hover:text-alert disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -711,7 +714,7 @@ function SelfieCapture({
                 type="button"
                 onClick={retakeSelfie}
                 disabled={disabled}
-                className="rounded-lg border border-terminal-green/50 px-3 py-1 font-mono text-xs text-terminal-green transition-all hover:bg-terminal-green/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border border-signal/50 px-3 py-1 font-mono text-xs text-signal transition-all hover:bg-signal/10 disabled:cursor-not-allowed disabled:opacity-50"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -725,34 +728,28 @@ function SelfieCapture({
             type="button"
             onClick={openCamera}
             disabled={disabled}
-            className="group relative w-full overflow-hidden rounded-lg border border-dashed border-terminal-green/30 bg-dark-800/30 p-8 transition-all hover:border-terminal-green/50 hover:bg-dark-800/50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="group relative w-full overflow-hidden border border-dashed border-signal/30 bg-ink-900/30 p-8 transition-all hover:border-signal/50 hover:bg-ink-900/50 disabled:cursor-not-allowed disabled:opacity-50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
             <div className="flex flex-col items-center gap-3">
-              <motion.div
-                className="text-4xl"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                📸
-              </motion.div>
-              <p className="font-mono text-sm text-gray-400">
+              <Camera className="h-8 w-8 text-signal/60 transition-colors group-hover:text-signal" aria-hidden="true" />
+              <p className="font-mono text-sm text-white/50">
                 Tap to open camera
               </p>
-              <p className="font-mono text-xs text-gray-600">
+              <p className="font-mono text-xs text-white/30">
                 Show Avan who&apos;s reaching out!
               </p>
             </div>
             
             {/* Corner decorations */}
             <div className="pointer-events-none absolute inset-4">
-              <div className="absolute left-0 top-0 h-6 w-6 border-l border-t border-terminal-green/40" />
-              <div className="absolute right-0 top-0 h-6 w-6 border-r border-t border-terminal-green/40" />
-              <div className="absolute bottom-0 left-0 h-6 w-6 border-b border-l border-terminal-green/40" />
-              <div className="absolute bottom-0 right-0 h-6 w-6 border-b border-r border-terminal-green/40" />
+              <div className="absolute left-0 top-0 h-6 w-6 border-l border-t border-signal/40" />
+              <div className="absolute right-0 top-0 h-6 w-6 border-r border-t border-signal/40" />
+              <div className="absolute bottom-0 left-0 h-6 w-6 border-b border-l border-signal/40" />
+              <div className="absolute bottom-0 right-0 h-6 w-6 border-b border-r border-signal/40" />
             </div>
           </motion.button>
         )}
@@ -882,65 +879,37 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-dark-900 py-20">
-      {/* Background effects */}
-      <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(0,255,65,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,65,0.3) 1px, transparent 1px)',
-            backgroundSize: '50px 50px',
-          }}
-        />
-        <div className="absolute -left-40 top-20 h-80 w-80 rounded-full bg-terminal-green/5 blur-3xl" />
-        <div className="absolute -right-40 bottom-20 h-80 w-80 rounded-full bg-neon-cyan/5 blur-3xl" />
-      </div>
-
-      <div className="relative mx-auto max-w-2xl px-6">
+    <section className="relative px-6 py-28 md:px-12 lg:px-20">
+      <div className="relative mx-auto max-w-2xl">
         {/* Header */}
-        <motion.div
-          className="mb-12 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <motion.div
-            className="mb-4 inline-block rounded-full border border-terminal-green/30 bg-terminal-green/5 px-4 py-1"
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            <span className="font-mono text-xs text-terminal-green">
-              📡 TRANSMISSION PORTAL
-            </span>
-          </motion.div>
-
-          <h2 className="mb-4 font-mono text-4xl font-bold text-white md:text-5xl">
-            Get in <span className="text-terminal-green">Touch</span>
+        <Reveal className="mb-12 text-center">
+          <p className="flex items-center justify-center gap-2.5 font-mono text-xs tracking-[0.3em] text-signal/70">
+            <span className="h-1.5 w-1.5 rounded-full bg-signal shadow-[0_0_8px_rgba(110,231,192,0.8)]" />
+            TRANSMISSION
+          </p>
+          <h2 className="mt-4 font-display text-5xl text-white md:text-6xl">
+            Get in <span className="italic text-signal">Touch</span>
           </h2>
-
-          <p className="mx-auto max-w-md font-mono text-sm text-gray-400">
-            Got a project idea? Want to collaborate? Or just want to say hi?
+          <p className="mx-auto mt-6 max-w-md font-sans text-sm leading-relaxed text-white/50">
+            Got a project idea, want to collaborate, or just want to say hi.
             <br />
             <span className="text-terminal-amber">
               Drop a message, record a voice note, or even snap a selfie.
             </span>
           </p>
-        </motion.div>
+        </Reveal>
 
         {/* Error message */}
         {error && (
           <motion.div
-            className="mb-6 rounded-lg border border-neon-pink/30 bg-neon-pink/5 p-4 text-center"
+            className="mb-6 border border-alert/30 bg-alert/5 p-4 text-center"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <p className="font-mono text-sm text-neon-pink">{error}</p>
+            <p className="font-mono text-sm text-alert">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="mt-2 font-mono text-xs text-gray-400 underline hover:text-white"
+              className="mt-2 font-mono text-xs text-white/50 underline hover:text-white"
             >
               Dismiss
             </button>
@@ -955,22 +924,12 @@ export default function ContactSection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="rounded-xl border border-terminal-green/30 bg-dark-800/50 p-8 text-center backdrop-blur-sm"
+              className="border border-signal/30 bg-ink-900/50 p-8 text-center backdrop-blur-sm"
             >
-              <motion.div
-                className="mb-4 text-6xl"
-                animate={{ 
-                  rotate: [0, 10, -10, 0],
-                  scale: [1, 1.1, 1],
-                }}
-                transition={{ duration: 0.5 }}
-              >
-                🚀
-              </motion.div>
-              <h3 className="mb-2 font-mono text-2xl font-bold text-terminal-green">
-                Message Transmitted!
+              <h3 className="mb-2 font-display text-3xl text-white">
+                Message <span className="italic text-signal">Transmitted.</span>
               </h3>
-              <p className="mb-4 font-mono text-sm text-gray-400">
+              <p className="mb-4 font-mono text-sm text-white/50">
                 {successMessage}
               </p>
               
@@ -990,27 +949,28 @@ export default function ContactSection() {
               {/* Simple location info for IP-based */}
               {submissionResult?.location && submissionResult?.location?.source !== 'gps' && (
                 <motion.div
-                  className="mb-6 inline-block rounded-lg border border-terminal-green/20 bg-dark-900/50 px-4 py-2"
+                  className="mb-6 inline-block border border-signal/20 bg-ink-950/50 px-4 py-2"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <p className="font-mono text-xs text-gray-500">
-                    📍 Transmitted from{' '}
-                    <span className="text-terminal-green">
+                  <p className="flex items-center justify-center gap-1.5 font-mono text-xs text-white/40">
+                    <MapPin className="h-3 w-3 text-signal" aria-hidden="true" />
+                    Transmitted from{' '}
+                    <span className="text-signal">
                       {submissionResult.location.city || 'Unknown'}, {submissionResult.location.country || 'Unknown'}
                     </span>
                   </p>
                 </motion.div>
               )}
 
-              <p className="mb-6 font-mono text-xs text-gray-500">
+              <p className="mb-6 font-mono text-xs text-white/40">
                 Avan will get back to you faster than a compile error.
               </p>
               
               <motion.button
                 onClick={handleReset}
-                className="rounded-lg border border-terminal-green/30 px-6 py-2 font-mono text-sm text-terminal-green transition-all hover:bg-terminal-green/10"
+                className="border border-signal/30 px-6 py-2 font-mono text-sm text-signal transition-all hover:bg-signal/10"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -1024,15 +984,15 @@ export default function ContactSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6 rounded-xl border border-terminal-green/20 bg-dark-800/30 p-6 backdrop-blur-sm md:p-8"
+              className="space-y-6 border border-signal/20 bg-ink-900/30 p-6 backdrop-blur-sm md:p-8"
             >
               {/* Message Input */}
               <div className="space-y-2">
                 <label
                   htmlFor="message"
-                  className="block font-mono text-sm text-terminal-green/80"
+                  className="block font-mono text-sm text-signal/80"
                 >
-                  Your Message <span className="text-neon-pink">*</span>
+                  Your Message <span className="text-alert">*</span>
                 </label>
                 <textarea
                   id="message"
@@ -1044,9 +1004,9 @@ export default function ContactSection() {
                   required
                   disabled={isSubmitting}
                   rows={5}
-                  className="w-full resize-none rounded-lg border border-terminal-green/20 bg-dark-900/50 p-4 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full resize-none border border-signal/20 bg-ink-950/50 p-4 font-mono text-sm text-white placeholder-white/30 outline-none transition-all focus:border-signal/50 focus:ring-1 focus:ring-signal/30 disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <p className="text-right font-mono text-xs text-gray-500">
+                <p className="text-right font-mono text-xs text-white/40">
                   {formData.message.length} characters
                 </p>
               </div>
@@ -1056,9 +1016,9 @@ export default function ContactSection() {
                 <div className="space-y-2">
                   <label
                     htmlFor="email"
-                    className="block font-mono text-sm text-terminal-green/80"
+                    className="block font-mono text-sm text-signal/80"
                   >
-                    Email <span className="text-gray-500">(optional)</span>
+                    Email <span className="text-white/40">(optional)</span>
                   </label>
                   <input
                     id="email"
@@ -1069,15 +1029,15 @@ export default function ContactSection() {
                     }
                     placeholder="you@example.com"
                     disabled={isSubmitting}
-                    className="w-full rounded-lg border border-terminal-green/20 bg-dark-900/50 p-3 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full border border-signal/20 bg-ink-950/50 p-3 font-mono text-sm text-white placeholder-white/30 outline-none transition-all focus:border-signal/50 focus:ring-1 focus:ring-signal/30 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="social"
-                    className="block font-mono text-sm text-terminal-green/80"
+                    className="block font-mono text-sm text-signal/80"
                   >
-                    Social <span className="text-gray-500">(optional)</span>
+                    Social <span className="text-white/40">(optional)</span>
                   </label>
                   <input
                     id="social"
@@ -1088,7 +1048,7 @@ export default function ContactSection() {
                     }
                     placeholder="@username or LinkedIn URL"
                     disabled={isSubmitting}
-                    className="w-full rounded-lg border border-terminal-green/20 bg-dark-900/50 p-3 font-mono text-sm text-white placeholder-gray-500 outline-none transition-all focus:border-terminal-green/50 focus:ring-1 focus:ring-terminal-green/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full border border-signal/20 bg-ink-950/50 p-3 font-mono text-sm text-white placeholder-white/30 outline-none transition-all focus:border-signal/50 focus:ring-1 focus:ring-signal/30 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -1114,40 +1074,18 @@ export default function ContactSection() {
               />
 
               {/* Submit Button */}
-              <motion.button
+              <SignalButton
                 type="submit"
                 disabled={isSubmitting || !formData.message.trim()}
-                className="group relative w-full overflow-hidden rounded-lg bg-gradient-to-r from-terminal-green to-neon-cyan py-4 font-mono text-lg font-bold text-dark-900 transition-all disabled:cursor-not-allowed disabled:opacity-50"
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                className="w-full text-center disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-neon-cyan to-terminal-green"
-                  animate={{
-                    x: ['0%', '100%', '0%'],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                  style={{ width: '200%', marginLeft: '-50%' }}
-                />
-
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  Transmit to Lab
-                  <motion.span
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    →
-                  </motion.span>
-                </span>
-              </motion.button>
+                Transmit to Lab →
+              </SignalButton>
 
               {/* Security note */}
-              <p className="text-center font-mono text-xs text-gray-500">
-                🔒 All media is captured live — no file uploads for your security
+              <p className="flex items-center justify-center gap-1.5 text-center font-mono text-xs text-white/40">
+                <Lock className="h-3 w-3" aria-hidden="true" />
+                All media is captured live, no file uploads, for your security
               </p>
             </motion.form>
           )}
@@ -1161,8 +1099,8 @@ export default function ContactSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
         >
-          <p className="font-mono text-xs text-gray-600">
-            Built with 💚 and probably too much coffee
+          <p className="font-mono text-xs text-white/30">
+            Built with care, and probably too much coffee
           </p>
         </motion.div>
       </div>
