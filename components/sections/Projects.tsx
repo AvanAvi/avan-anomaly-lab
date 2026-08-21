@@ -3,6 +3,7 @@
 import { useTransition } from "@/app/transition-provider";
 import Reveal from "@/components/ui/Reveal";
 import SignalButton from "@/components/ui/SignalButton";
+import StatsRow from "@/components/ui/StatsRow";
 
 const STATS = [
   { value: "12+", label: "Projects" },
@@ -30,17 +31,8 @@ export default function Projects() {
           </p>
         </Reveal>
 
-        <Reveal delay={0.2}>
-          <div className="mt-14 flex flex-wrap items-center gap-x-12 gap-y-6 border-y border-line py-8">
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <div className="font-display text-3xl text-signal">{stat.value}</div>
-                <div className="mt-1 font-mono text-xs tracking-wide text-white/40">
-                  {stat.label.toUpperCase()}
-                </div>
-              </div>
-            ))}
-          </div>
+        <Reveal delay={0.2} className="mt-14">
+          <StatsRow stats={STATS} />
         </Reveal>
 
         <Reveal delay={0.3}>

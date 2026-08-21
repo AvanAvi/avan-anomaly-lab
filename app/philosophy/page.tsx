@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import BackLink from "@/components/ui/BackLink";
 import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
+import TagChip from "@/components/ui/TagChip";
 
 interface Philosopher {
   id: string;
@@ -255,12 +256,7 @@ export default function PhilosophyPage() {
                         <p className="mt-1 font-sans text-sm text-white/50">{article.excerpt}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           {article.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="border border-line px-2 py-1 font-mono text-[11px] text-white/40"
-                            >
-                              {tag}
-                            </span>
+                            <TagChip key={tag}>{tag}</TagChip>
                           ))}
                         </div>
                       </div>

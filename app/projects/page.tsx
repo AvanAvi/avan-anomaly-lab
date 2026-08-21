@@ -4,6 +4,9 @@ import { useState } from "react";
 import BackLink from "@/components/ui/BackLink";
 import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
+import StatusBadge from "@/components/ui/StatusBadge";
+import StatsRow from "@/components/ui/StatsRow";
+import TagChip from "@/components/ui/TagChip";
 
 interface Project {
   id: number;
@@ -75,22 +78,29 @@ const PROJECTS: Project[] = [
   },
 ];
 
-const STATUS_STYLES: Record<Project["status"], { label: string; className: string }> = {
-  completed: { label: "Deployed", className: "text-signal" },
-  "in-progress": { label: "Building", className: "text-terminal-amber" },
-  experimental: { label: "Experimental", className: "text-white/50" },
+// Derived once from the module-level PROJECTS constant, not on every render.
+const ALL_TAGS = Array.from(new Set(PROJECTS.flatMap((p) => p.tags)));
+const STATS = [
+  { value: PROJECTS.length, label: "Total builds" },
+  { value: PROJECTS.filter((p) => p.status === "completed").length, label: "Deployed" },
+  { value: PROJECTS.filter((p) => p.status === "in-progress").length, label: "In progress" },
+  { value: PROJECTS.filter((p) => p.status === "experimental").length, label: "Experimental" },
+];
+
+const STATUS_LABELS: Record<Project["status"], { label: string; tone: "positive" | "active" | "neutral" }> = {
+  completed: { label: "Deployed", tone: "positive" },
+  "in-progress": { label: "Building", tone: "active" },
+  experimental: { label: "Experimental", tone: "neutral" },
 };
 
 function ProjectCard({ project }: { project: Project }) {
-  const status = STATUS_STYLES[project.status];
+  const status = STATUS_LABELS[project.status];
 
   return (
     <div className="group flex h-full flex-col border border-line p-6 transition-colors duration-300 hover:border-signal/40">
       <div className="mb-4 flex items-start justify-between gap-3">
         <h3 className="font-display text-xl text-white">{project.title}</h3>
-        <span className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${status.className}`}>
-          {status.label}
-        </span>
+        <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
       </div>
 
       {project.sample && (
@@ -105,12 +115,7 @@ function ProjectCard({ project }: { project: Project }) {
 
       <div className="mb-4 flex flex-wrap gap-2">
         {project.tags.map((tag) => (
-          <span
-            key={tag}
-            className="border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-white/40"
-          >
-            {tag}
-          </span>
+          <TagChip key={tag}>{tag}</TagChip>
         ))}
       </div>
 
@@ -142,21 +147,36 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={`border px-3 py-1 font-mono text-xs transition-colors ${
+        active
+          ? "border-signal/50 bg-signal/10 text-signal"
+          : "border-line text-white/50 hover:border-line-strong hover:text-white/80"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function ProjectsPage() {
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   const filteredProjects = activeFilter
     ? PROJECTS.filter((p) => p.tags.includes(activeFilter))
     : PROJECTS;
-
-  const allTags = Array.from(new Set(PROJECTS.flatMap((p) => p.tags))).slice(0, 8);
-
-  const stats = [
-    { value: PROJECTS.length, label: "Total builds" },
-    { value: PROJECTS.filter((p) => p.status === "completed").length, label: "Deployed" },
-    { value: PROJECTS.filter((p) => p.status === "in-progress").length, label: "In progress" },
-    { value: PROJECTS.filter((p) => p.status === "experimental").length, label: "Experimental" },
-  ];
 
   return (
     <div className="relative min-h-screen">
@@ -175,28 +195,17 @@ export default function ProjectsPage() {
           <Reveal delay={0.1}>
             <div className="mt-10 flex flex-wrap items-center gap-2 border border-line p-4">
               <span className="font-mono text-xs text-white/40">Filter:</span>
-              <button
-                onClick={() => setActiveFilter(null)}
-                className={`border px-3 py-1 font-mono text-xs transition-colors ${
-                  activeFilter === null
-                    ? "border-signal/50 bg-signal/10 text-signal"
-                    : "border-line text-white/50 hover:border-line-strong hover:text-white/80"
-                }`}
-              >
+              <FilterPill active={activeFilter === null} onClick={() => setActiveFilter(null)}>
                 All
-              </button>
-              {allTags.map((tag) => (
-                <button
+              </FilterPill>
+              {ALL_TAGS.map((tag) => (
+                <FilterPill
                   key={tag}
+                  active={activeFilter === tag}
                   onClick={() => setActiveFilter(activeFilter === tag ? null : tag)}
-                  className={`border px-3 py-1 font-mono text-xs transition-colors ${
-                    activeFilter === tag
-                      ? "border-signal/50 bg-signal/10 text-signal"
-                      : "border-line text-white/50 hover:border-line-strong hover:text-white/80"
-                  }`}
                 >
                   {tag}
-                </button>
+                </FilterPill>
               ))}
             </div>
           </Reveal>
@@ -221,17 +230,8 @@ export default function ProjectsPage() {
             </div>
           )}
 
-          <Reveal delay={0.2}>
-            <div className="mt-16 flex flex-wrap items-center gap-x-12 gap-y-6 border-y border-line py-8">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <div className="font-display text-3xl text-signal">{stat.value}</div>
-                  <div className="mt-1 font-mono text-xs tracking-wide text-white/40">
-                    {stat.label.toUpperCase()}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <Reveal delay={0.2} className="mt-16">
+            <StatsRow stats={STATS} />
           </Reveal>
 
           <Reveal delay={0.25}>
