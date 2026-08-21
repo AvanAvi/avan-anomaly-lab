@@ -47,6 +47,7 @@ const config: Config = {
           dim: "#3a7d6b",
           bright: "#9ffbdd",
         },
+        alert: "#e5484d",
       },
       fontFamily: {
         mono: ["var(--font-mono)", "monospace"],
