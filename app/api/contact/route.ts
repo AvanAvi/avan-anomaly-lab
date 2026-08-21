@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
+import { clampString, estimateBase64Bytes, getClientIp, isRateLimited, isValidEmail } from '@/lib/security';
 
 // ============================================
 // TYPES
@@ -14,11 +15,11 @@ interface ContactPayload {
   audioBase64: string | null;
   audioDuration: number | null;
   imageBase64: string | null;
-  
+
   // Contact (optional)
   contactEmail: string | null;
   contactSocial: string | null;
-  
+
   // Location
   locationPrecise: boolean;
   locationCoords: {
@@ -26,7 +27,7 @@ interface ContactPayload {
     lng: number;
     accuracy: number;
   } | null;
-  
+
   // Device info (collected client-side)
   deviceInfo: {
     userAgent: string;
@@ -37,6 +38,48 @@ interface ContactPayload {
   timezone: string;
   timezoneOffset: number;
   languages: string[];
+
+  /** Hidden field left empty by real visitors; filled by bots. */
+  honeypot?: string;
+}
+
+// ============================================
+// VALIDATION
+// ============================================
+
+const MAX_REQUEST_BYTES = 8 * 1024 * 1024; // 8MB: covers a compressed 1-min audio clip + selfie + text
+const MAX_MESSAGE_LENGTH = 5000;
+const MAX_AUDIO_BYTES = 12 * 1024 * 1024; // decoded webm, generous for a 60s clip
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024; // decoded jpeg, client already compresses to ~800px
+
+function isValidCoords(coords: unknown): coords is { lat: number; lng: number; accuracy: number } {
+  if (!coords || typeof coords !== 'object') return false;
+  const c = coords as Record<string, unknown>;
+  return (
+    typeof c.lat === 'number' && c.lat >= -90 && c.lat <= 90 &&
+    typeof c.lng === 'number' && c.lng >= -180 && c.lng <= 180 &&
+    typeof c.accuracy === 'number' && c.accuracy >= 0
+  );
+}
+
+/** Validates and clamps the raw payload. Returns an error message or null. */
+function validatePayload(payload: Partial<ContactPayload>): string | null {
+  if (typeof payload.message !== 'string' || payload.message.trim().length === 0) {
+    return 'Message is required';
+  }
+  if (payload.message.length > MAX_MESSAGE_LENGTH) {
+    return 'Message is too long';
+  }
+  if (payload.audioBase64 && estimateBase64Bytes(payload.audioBase64) > MAX_AUDIO_BYTES) {
+    return 'Audio recording is too large';
+  }
+  if (payload.imageBase64 && estimateBase64Bytes(payload.imageBase64) > MAX_IMAGE_BYTES) {
+    return 'Image is too large';
+  }
+  if (payload.locationPrecise && payload.locationCoords && !isValidCoords(payload.locationCoords)) {
+    return 'Invalid location data';
+  }
+  return null;
 }
 
 // ============================================
@@ -273,34 +316,65 @@ async function reverseGeocode(lat: number, lng: number): Promise<{
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabase();
-    const payload: ContactPayload = await request.json();
-    
-    // Validate required fields
-    if (!payload.message || payload.message.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'Message is required' },
-        { status: 400 }
-      );
+    // Reject wildly oversized requests before parsing the body at all.
+    const contentLength = Number(request.headers.get('content-length') || 0);
+    if (contentLength > MAX_REQUEST_BYTES) {
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
-    
-    // Get client IP
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const ip = forwardedFor?.split(',')[0]?.trim() || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
-    
+
+    const supabase = createServerSupabase();
+    const payload: Partial<ContactPayload> = await request.json();
+
+    // Honeypot: a real visitor never fills this hidden field. Pretend
+    // success rather than telling a bot its submission was rejected.
+    if (payload.honeypot) {
+      return NextResponse.json({ success: true, id: 'ok' });
+    }
+
+    const validationError = validatePayload(payload);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
+    const message = (payload.message as string).trim();
+    const contactEmailRaw = clampString(payload.contactEmail, 254);
+    const contactEmail = contactEmailRaw && isValidEmail(contactEmailRaw) ? contactEmailRaw : null;
+    const contactSocial = clampString(payload.contactSocial, 200) || null;
+    const audioDuration =
+      typeof payload.audioDuration === 'number' && payload.audioDuration >= 0
+        ? Math.min(payload.audioDuration, 120)
+        : null;
+    const timezone = clampString(payload.timezone, 100);
+    const languages = Array.isArray(payload.languages)
+      ? payload.languages.filter((l): l is string => typeof l === 'string').slice(0, 10).map((l) => l.slice(0, 20))
+      : [];
+    const deviceInfo = {
+      userAgent: clampString(payload.deviceInfo?.userAgent, 500),
+      platform: clampString(payload.deviceInfo?.platform, 100),
+      screenResolution: clampString(payload.deviceInfo?.screenResolution, 50),
+      language: clampString(payload.deviceInfo?.language, 20),
+    };
+
+    const ip = getClientIp(request) || 'unknown';
+
+    if (ip !== 'unknown') {
+      const limited = await isRateLimited(supabase, 'submissions', ip, { windowMinutes: 10, maxRequests: 5 });
+      if (limited) {
+        return NextResponse.json({ error: 'Too many submissions. Try again in a few minutes.' }, { status: 429 });
+      }
+    }
+
     // ============================================
     // UPLOAD FILES
     // ============================================
-    
+
     let audioUrl: string | null = null;
     let imageUrl: string | null = null;
-    
+
     if (payload.audioBase64) {
       audioUrl = await uploadToStorage(supabase, 'audio', payload.audioBase64, 'webm');
     }
-    
+
     if (payload.imageBase64) {
       imageUrl = await uploadToStorage(supabase, 'images', payload.imageBase64, 'jpg');
     }
@@ -351,8 +425,8 @@ export async function POST(request: NextRequest) {
     const { score, flags } = calculateConsistencyScore(
       ipGeo.countryCode,
       gpsLocation.countryCode,
-      payload.timezone,
-      payload.languages
+      timezone,
+      languages
     );
     
     // Add VPN/datacenter flags
@@ -368,41 +442,41 @@ export async function POST(request: NextRequest) {
       .from('submissions')
       .insert({
         // Content
-        message: payload.message.trim(),
+        message,
         audio_url: audioUrl,
-        audio_duration_seconds: payload.audioDuration,
+        audio_duration_seconds: audioDuration,
         image_url: imageUrl,
-        
+
         // Contact
-        contact_email: payload.contactEmail,
-        contact_social: payload.contactSocial,
-        
+        contact_email: contactEmail,
+        contact_social: contactSocial,
+
         // Location
-        location_precise: payload.locationPrecise,
-        location_coords: payload.locationCoords,
+        location_precise: Boolean(payload.locationPrecise),
+        location_coords: payload.locationCoords ?? null,
         location_city: finalLocation.city,
         location_region: finalLocation.region,
         location_country: finalLocation.country,
         location_country_code: finalLocation.countryCode,
         location_source: finalLocation.source,
-        
+
         // IP Data
         ip_address: ip,
         ip_is_vpn: ipGeo.isVpn,
         ip_is_datacenter: ipGeo.isDatacenter,
         ip_isp: ipGeo.isp,
-        
+
         // Device & Browser
         device_info: {
-          user_agent: payload.deviceInfo.userAgent,
-          platform: payload.deviceInfo.platform,
-          screen_resolution: payload.deviceInfo.screenResolution,
-          language: payload.deviceInfo.language,
+          user_agent: deviceInfo.userAgent,
+          platform: deviceInfo.platform,
+          screen_resolution: deviceInfo.screenResolution,
+          language: deviceInfo.language,
         },
-        timezone: payload.timezone,
-        timezone_offset: payload.timezoneOffset,
-        languages: payload.languages,
-        
+        timezone,
+        timezone_offset: typeof payload.timezoneOffset === 'number' ? payload.timezoneOffset : null,
+        languages,
+
         // Trust Signals
         location_consistency_score: score,
         trust_flags: allFlags.length > 0 ? allFlags : null,

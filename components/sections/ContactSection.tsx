@@ -18,6 +18,8 @@ interface FormData {
   selfieDataUrl: string | null;
   contactEmail: string;
   contactSocial: string;
+  /** Hidden field; only a bot fills this in. */
+  honeypot: string;
 }
 
 interface SubmissionResponse {
@@ -769,6 +771,7 @@ export default function ContactSection() {
     selfieDataUrl: null,
     contactEmail: '',
     contactSocial: '',
+    honeypot: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -842,6 +845,7 @@ export default function ContactSection() {
           timezone,
           timezoneOffset,
           languages,
+          honeypot: formData.honeypot,
         }),
       });
 
@@ -870,6 +874,7 @@ export default function ContactSection() {
       audioBlob: null,
       audioDuration: 0,
       selfieDataUrl: null,
+      honeypot: '',
       contactEmail: '',
       contactSocial: '',
     });
@@ -986,6 +991,18 @@ export default function ContactSection() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6 border border-signal/20 bg-ink-900/30 p-6 backdrop-blur-sm md:p-8"
             >
+              {/* Honeypot: hidden from real visitors, catches basic bots */}
+              <input
+                type="text"
+                name="website"
+                value={formData.honeypot}
+                onChange={(e) => setFormData({ ...formData, honeypot: e.target.value })}
+                className="absolute left-[-9999px] h-0 w-0 overflow-hidden opacity-0"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+              />
+
               {/* Message Input */}
               <div className="space-y-2">
                 <label
