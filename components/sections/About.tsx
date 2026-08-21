@@ -1,151 +1,90 @@
-"use client";
+import Reveal from "@/components/ui/Reveal";
 
-import { useRef } from "react";
-import { useInView } from "framer-motion";
+interface Credential {
+  index: string;
+  kind: string;
+  title: string;
+  description: string;
+  note?: string;
+}
+
+const CREDENTIALS: Credential[] = [
+  {
+    index: "01",
+    kind: "Bachelor's",
+    title: "B.Tech, Computer Science and Engineering",
+    description:
+      "Where zeros and ones started building worlds, and algorithms started reading like poetry.",
+  },
+  {
+    index: "02",
+    kind: "Master's",
+    title: "MSc (Research), Informatics",
+    description:
+      "Where questions became more valuable than answers, and research turned out to be organized curiosity.",
+  },
+  {
+    index: "03",
+    kind: "Doctorate",
+    title: "Engineering Doctorate",
+    description:
+      '"Nothing really matters." But if it did, this is where theory met reality.',
+    note: "Title acquired. Ego optional.",
+  },
+];
 
 export default function About() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
-    <section
-      ref={ref}
-      className="relative min-h-screen px-4 py-20 md:px-8 lg:px-16"
-    >
-      {/* Section Header */}
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-16 border-l-4 border-terminal-green pl-6">
-          <h2 className="mb-2 font-mono text-sm text-terminal-green/60">
-            {">"} SYSTEM_INFO
+    <section className="relative px-6 py-28 md:px-12 lg:px-20">
+      <div className="mx-auto max-w-5xl">
+        <Reveal>
+          <p className="font-mono text-xs tracking-[0.3em] text-signal/70">PROFILE</p>
+          <h2 className="mt-4 font-display text-5xl text-white md:text-6xl">
+            The <span className="italic text-signal">Anomaly</span>
           </h2>
-          <h1 className="font-mono text-4xl font-bold text-terminal-green md:text-6xl">
-            The Anomaly
-          </h1>
-        </div>
+        </Reveal>
 
-        {/* Main Content Grid */}
-        <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2">
-          {/* Left Column - Philosophical Intro */}
-          <div
-            className={`space-y-6 transition-all duration-1000 ${
-              isInView ? "translate-x-0 opacity-100" : "-translate-x-20 opacity-0"
-            }`}
-          >
-            <div className="group relative border border-terminal-green/30 bg-dark-800/50 p-6 backdrop-blur-sm transition-all hover:border-terminal-green">
-              <div className="absolute -left-2 -top-2 h-4 w-4 border-l-2 border-t-2 border-terminal-green" />
-              <div className="absolute -right-2 -top-2 h-4 w-4 border-r-2 border-t-2 border-terminal-green" />
-              
-              <p className="font-mono text-lg leading-relaxed text-terminal-green">
-                They call me <span className="text-terminal-amber">Dr.</span> —
-                though as Queen once said,{" "}
-                <span className="italic text-neon-pink">"nothing really matters."</span>
-              </p>
+        <Reveal delay={0.1}>
+          <p className="mt-10 max-w-2xl font-display text-2xl italic leading-relaxed text-white/80 md:text-3xl">
+            I&apos;m an engineer who thinks too much, and a philosopher who codes.
+            Most people call it Computer Science. I call it the art of teaching
+            sand to think.
+          </p>
+        </Reveal>
 
-              <p className="mt-4 font-mono text-base leading-relaxed text-terminal-green">
-                Just titles. Prefixes. Symbols we attach to make sense of the chaos.
-              </p>
-            </div>
-
-            <div className="space-y-4 border-l-2 border-terminal-green/30 pl-6">
-              <p className="font-mono text-base leading-relaxed text-terminal-green">
-                I'm an engineer who thinks too much.
-                <br />A philosopher who codes.
-                <br />A scientist (maybe) who questions most of it, if not all of it—
-                <br />maybe some of it—depends on how drunk I am.
-                <br />
-                <span className="text-xs text-terminal-green/70">(Don't tell my mom I've started drinking again, hehe)</span>
-              </p>
-
-              <p className="font-mono text-base leading-relaxed text-terminal-green">
-                Some call it <span className="text-neon-cyan">Computer Science</span>.
-                I call it the art of teaching sand to think.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column - Academic Journey */}
-          <div
-            className={`space-y-6 transition-all duration-1000 delay-300 ${
-              isInView ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
-            }`}
-          >
-            {/* Bachelor's */}
-            <div className="group relative border border-terminal-green/30 bg-dark-800/50 p-6 backdrop-blur-sm transition-all hover:border-neon-cyan hover:shadow-lg hover:shadow-neon-cyan/20">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="font-mono text-xs text-neon-cyan">BACHELOR_DEGREE</span>
-                <div className="h-px flex-1 bg-neon-cyan/30" />
+        <Reveal delay={0.2}>
+          <div className="mt-20 border-t border-line">
+            {CREDENTIALS.map((credential) => (
+              <div
+                key={credential.index}
+                className="grid gap-3 border-b border-line py-8 sm:grid-cols-[5rem_10rem_1fr] sm:gap-8"
+              >
+                <span className="font-mono text-sm text-white/30">{credential.index}</span>
+                <span className="font-mono text-xs uppercase tracking-wide text-signal/70">
+                  {credential.kind}
+                </span>
+                <div>
+                  <h3 className="font-display text-xl text-white md:text-2xl">
+                    {credential.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl font-sans text-sm leading-relaxed text-white/50">
+                    {credential.description}
+                  </p>
+                  {credential.note && (
+                    <p className="mt-2 font-mono text-xs text-white/30">{credential.note}</p>
+                  )}
+                </div>
               </div>
-              <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
-                Technology in Computer Science & Engineering
-              </h3>
-              <p className="font-mono text-sm leading-relaxed text-terminal-green">
-                Where I learned that zeros and ones could build worlds.
-                That logic gates were portals. That algorithms were poetry.
-              </p>
-            </div>
-
-            {/* Master's */}
-            <div className="group relative border border-terminal-green/30 bg-dark-800/50 p-6 backdrop-blur-sm transition-all hover:border-neon-pink hover:shadow-lg hover:shadow-neon-pink/20">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="font-mono text-xs text-neon-pink">MASTER_DEGREE</span>
-                <div className="h-px flex-1 bg-neon-pink/30" />
-              </div>
-              <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
-                Science (Research) in Informatics
-              </h3>
-              <p className="font-mono text-sm leading-relaxed text-terminal-green">
-                Where questions became more valuable than answers.
-                Where I learned that research is just organized curiosity—
-                and sometimes, beautiful chaos.
-              </p>
-            </div>
-
-            {/* Doctorate (cryptic) */}
-            <div className="group relative border border-terminal-green/30 bg-dark-800/50 p-6 backdrop-blur-sm transition-all hover:border-terminal-amber hover:shadow-lg hover:shadow-terminal-amber/20">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="font-mono text-xs text-terminal-amber">DOCTORATE_LEVEL</span>
-                <div className="h-px flex-1 bg-terminal-amber/30" />
-              </div>
-              <h3 className="mb-3 font-mono text-xl font-bold text-terminal-green">
-                Engineering Doctorate
-              </h3>
-              <p className="font-mono text-sm italic leading-relaxed text-terminal-green">
-                "Nothing really matters." <br />
-                But if it did, this would be where theory met reality.
-                Where I became both the question and the answer.
-              </p>
-              <p className="mt-2 font-mono text-xs text-terminal-amber/60">
-                * Title acquired. Ego optional.
-              </p>
-            </div>
+            ))}
           </div>
-        </div>
+        </Reveal>
 
-        {/* Bottom Quote */}
-        <div
-          className={`mx-auto mt-16 max-w-3xl transition-all duration-1000 delay-500 ${
-            isInView ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
-          }`}
-        >
-          <div className="border-y border-terminal-green/30 py-8 text-center">
-            <p className="font-mono text-xl leading-relaxed text-terminal-green md:text-2xl">
-              <span className="text-terminal-amber">[</span>
-              <span className="text-neon-pink">25%</span> Engineer{" "}
-              <span className="text-terminal-green">|</span>{" "}
-              <span className="text-neon-cyan">50%</span> Philosopher{" "}
-              <span className="text-terminal-green">|</span>{" "}
-              <span className="text-terminal-amber">25%</span> ¯\_(ツ)_/¯
-              <span className="text-terminal-amber">]</span>
-            </p>
-            <p className="mt-4 font-mono text-sm text-terminal-green/60">
-              // Breaking the fourth wall of conventional science, one anomaly at a time.
-            </p>
-          </div>
-        </div>
-
-        {/* Corner Accents */}
-        <div className="pointer-events-none absolute right-8 top-8 h-24 w-24 border-r-2 border-t-2 border-terminal-green/20" />
-        <div className="pointer-events-none absolute bottom-8 left-8 h-24 w-24 border-b-2 border-l-2 border-terminal-green/20" />
+        <Reveal delay={0.3}>
+          <p className="mt-12 font-mono text-xs tracking-wide text-white/40">
+            25% ENGINEER <span className="text-signal/50">·</span> 50% PHILOSOPHER{" "}
+            <span className="text-signal/50">·</span> 25% UNDEFINED
+          </p>
+        </Reveal>
       </div>
     </section>
   );
