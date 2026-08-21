@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { useState, useRef } from "react";
+import BackLink from "@/components/ui/BackLink";
+import FieldBackground from "@/components/effects/FieldBackground";
+import Reveal from "@/components/ui/Reveal";
 
-// Philosopher data
-const philosophers = [
+interface Philosopher {
+  id: string;
+  name: string;
+  title: string;
+  icon: string;
+  quotes: string[];
+  articles: { title: string; excerpt: string; tags: string[] }[];
+}
+
+const PHILOSOPHERS: Philosopher[] = [
   {
     id: "kafka",
     name: "Franz Kafka",
     title: "Professor of Bureaucratic Nightmares",
-    color: "neon-cyan",
-    glowColor: "#00ffff",
-    doorStyle: "border-neon-cyan",
     icon: "📜",
     quotes: [
       "Just like me not sending letters to Milena, Avan has also written letters to [REDACTED] which he hasn't sent. We suffer together in the postal void.",
@@ -35,12 +42,9 @@ const philosophers = [
     id: "camus",
     name: "Albert Camus",
     title: "Master of Beautiful Meaninglessness",
-    color: "terminal-amber",
-    glowColor: "#ffb000",
-    doorStyle: "border-terminal-amber",
     icon: "🪨",
     quotes: [
-      "One must imagine Avan happy... debugging at 3 AM. The absurd hero pushes his commits uphill, eternally.",
+      "One must imagine Avan happy, debugging at 3 AM. The absurd hero pushes his commits uphill, eternally.",
       "The only serious philosophical question is whether to use tabs or spaces. Everything else is commentary.",
       "Avan revolts against the meaninglessness of life by writing meaningful code. How delightfully absurd.",
     ],
@@ -61,9 +65,6 @@ const philosophers = [
     id: "nietzsche",
     name: "Friedrich Nietzsche",
     title: "Chancellor of Dangerous Thinking",
-    color: "neon-pink",
-    glowColor: "#ff006e",
-    doorStyle: "border-neon-pink",
     icon: "⚡",
     quotes: [
       "Avan gazes into the codebase, and the codebase gazes back. He who fights with bugs should see that he himself does not become a bug.",
@@ -87,12 +88,9 @@ const philosophers = [
     id: "sartre",
     name: "Jean-Paul Sartre",
     title: "Dean of Radical Freedom",
-    color: "terminal-green",
-    glowColor: "#00ff41",
-    doorStyle: "border-terminal-green",
     icon: "🚬",
     quotes: [
-      "Avan is condemned to be free... to choose between tabs and spaces. Hell is other people's code reviews.",
+      "Avan is condemned to be free, to choose between tabs and spaces. Hell is other people's code reviews.",
       "Existence precedes essence, but documentation comes never. Avan exists without a README.",
       "We are our choices. Avan chose JavaScript. He must live with that now.",
     ],
@@ -113,14 +111,11 @@ const philosophers = [
     id: "diogenes",
     name: "Diogenes",
     title: "The Barrel-Dwelling Truth Seeker",
-    color: "purple-400",
-    glowColor: "#c084fc",
-    doorStyle: "border-purple-400",
     icon: "🛢️",
     quotes: [
       "I am still searching for an honest developer who writes comments. Avan comes close, but his documentation still lies.",
       "Avan lives in a Docker container. I live in a barrel. We're not so different.",
-      "Throw away your framework! Write raw assembly! Return to MONKE—I mean, return to first principles!",
+      "Throw away your framework. Write raw assembly. Return to first principles.",
     ],
     articles: [
       {
@@ -137,20 +132,17 @@ const philosophers = [
   },
   {
     id: "schrodinger",
-    name: "Schrödinger",
+    name: "Schrodinger",
     title: "Quantum Uncertainty Specialist",
-    color: "neon-cyan",
-    glowColor: "#00d9ff",
-    doorStyle: "border-neon-cyan",
     icon: "🐱",
     quotes: [
-      "Avan's code exists in superposition—both working and broken until observed by production users.",
+      "Avan's code exists in superposition, both working and broken until observed by production users.",
       "The cat is neither alive nor dead until you check the logs. Then it's definitely dead.",
       "Is the bug in the code, or in our observation of the code? Yes.",
     ],
     articles: [
       {
-        title: "Schrödinger's Deploy",
+        title: "Schrodinger's Deploy",
         excerpt: "On quantum uncertainty in production",
         tags: ["Quantum", "DevOps", "Uncertainty"],
       },
@@ -164,249 +156,133 @@ const philosophers = [
 ];
 
 export default function PhilosophyPage() {
-  const [selectedPhilosopher, setSelectedPhilosopher] = useState<string | null>(null);
-  const [currentQuote, setCurrentQuote] = useState<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [currentQuote, setCurrentQuote] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handleDoorClick = (id: string) => {
-    setIsTransitioning(true);
-    setSelectedPhilosopher(id);
-    setCurrentQuote(0);
+  const selected = PHILOSOPHERS.find((p) => p.id === selectedId);
 
-    // Wait for state update, then scroll with smooth transition
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+    setCurrentQuote(0);
     setTimeout(() => {
-      contentRef.current?.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
-      
-      // Remove transition effect after scroll
-      setTimeout(() => setIsTransitioning(false), 800);
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
 
   const handleNextQuote = () => {
-    const philosopher = philosophers.find((p) => p.id === selectedPhilosopher);
-    if (philosopher) {
-      setCurrentQuote((prev) => (prev + 1) % philosopher.quotes.length);
+    if (selected) {
+      setCurrentQuote((prev) => (prev + 1) % selected.quotes.length);
     }
   };
 
-  const selectedPhil = philosophers.find((p) => p.id === selectedPhilosopher);
-
   return (
-    <div className="min-h-screen bg-dark-900 px-4 py-20 md:px-8">
-      {/* Transition overlay */}
-      {isTransitioning && (
-        <div className="fixed inset-0 z-50 bg-dark-900/80 backdrop-blur-sm transition-opacity duration-500">
-          <div className="flex h-full items-center justify-center">
-            <p className="font-mono text-2xl text-neon-pink animate-pulse">
-              Entering {selectedPhil?.name}'s classroom...
+    <div className="relative min-h-screen">
+      <FieldBackground />
+      <div className="relative px-6 py-20 md:px-12 lg:px-20">
+        <BackLink label="Exit the institute" />
+
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <p className="font-mono text-xs tracking-[0.3em] text-signal/70">PHILOSOPHY</p>
+            <h1 className="mt-4 font-display text-5xl text-white md:text-7xl">
+              The Anomaly <span className="italic text-signal">Institute</span>
+            </h1>
+            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-white/50">
+              Questioning everything, answering nothing. Pick a professor, get roasted.
             </p>
-          </div>
-        </div>
-      )}
+          </Reveal>
 
-      {/* Back Button */}
-      <Link
-        href="/"
-        className="group mb-12 inline-flex items-center gap-2 border border-neon-pink/30 bg-dark-800/50 px-4 py-2 font-mono text-neon-pink transition-all hover:border-neon-pink hover:bg-neon-pink/10"
-      >
-        <span className="transition-transform group-hover:-translate-x-1">←</span>
-        EXIT THE INSTITUTE
-      </Link>
-
-      {/* Main Content */}
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-16 text-center">
-          <h1
-            className="mb-4 font-mono text-6xl font-bold text-white md:text-8xl"
-          >
-            THE ANOMALY INSTITUTE
-          </h1>
-          <p className="font-mono text-xl text-terminal-green md:text-2xl">
-            <span className="text-neon-cyan">"</span>
-            Questioning Everything, Answering Nothing
-            <span className="text-neon-cyan">"</span>
-          </p>
-          <p
-            className="mt-6 font-mono text-2xl font-bold text-terminal-amber md:text-3xl"
-          >
-            ⚡ Choose Your Professor ⚡
-          </p>
-          <p className="mt-2 font-mono text-lg text-neon-pink animate-pulse">
-            Embrace the Existential Roast
-          </p>
-        </div>
-
-        {/* Hallway with Doors */}
-        <div className="relative">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {philosophers.map((phil, index) => (
-              <button
-                key={phil.id}
-                onClick={() => handleDoorClick(phil.id)}
-                className={`group relative h-80 border-4 ${phil.doorStyle} bg-dark-800/80 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-2xl`}
-                style={{
-                  animation: `fadeInUp 0.6s ease-out ${index * 0.1}s both`,
-                  boxShadow: selectedPhilosopher === phil.id 
-                    ? `0 0 40px ${phil.glowColor}, 0 0 80px ${phil.glowColor}` 
-                    : 'none',
-                }}
-              >
-                {/* Door Icon */}
-                <div className="absolute left-1/2 top-8 -translate-x-1/2 text-6xl transition-transform group-hover:scale-110">
-                  {phil.icon}
-                </div>
-
-                {/* Door Name Plate */}
-                <div className="absolute left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center">
-                  <h3
-                    className="mb-3 font-mono text-2xl font-bold"
-                    style={{
-                      color: phil.glowColor,
-                    }}
-                  >
-                    {phil.name}
-                  </h3>
-                  <p
-                    className="font-mono text-sm font-bold text-white"
-                  >
-                    {phil.title}
-                  </p>
-                </div>
-
-                {/* Door Handle */}
-                <div className="absolute bottom-12 left-1/2 h-12 w-2 -translate-x-1/2 bg-terminal-amber transition-all group-hover:bg-neon-cyan group-hover:shadow-lg group-hover:shadow-neon-cyan" />
-
-                {/* Glow effect on hover */}
-                <div 
-                  className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
-                  style={{
-                    boxShadow: `inset 0 0 60px ${phil.glowColor}20`,
-                  }}
-                />
-
-                {/* Corner brackets */}
-                <div className="absolute left-2 top-2 h-8 w-8 border-l-2 border-t-2 border-white/40 transition-colors group-hover:border-white" />
-                <div className="absolute right-2 top-2 h-8 w-8 border-r-2 border-t-2 border-white/40 transition-colors group-hover:border-white" />
-                <div className="absolute bottom-2 left-2 h-8 w-8 border-b-2 border-l-2 border-white/40 transition-colors group-hover:border-white" />
-                <div className="absolute bottom-2 right-2 h-8 w-8 border-b-2 border-r-2 border-white/40 transition-colors group-hover:border-white" />
-              </button>
+          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {PHILOSOPHERS.map((phil, index) => (
+              <Reveal key={phil.id} delay={Math.min(index * 0.08, 0.3)}>
+                <button
+                  onClick={() => handleSelect(phil.id)}
+                  className={`group flex h-full w-full flex-col items-center border p-8 text-center transition-colors duration-300 ${
+                    selectedId === phil.id
+                      ? "border-signal/60 bg-signal/5"
+                      : "border-line hover:border-signal/40"
+                  }`}
+                >
+                  <span className="text-4xl">{phil.icon}</span>
+                  <h2 className="mt-5 font-display text-2xl text-white">{phil.name}</h2>
+                  <p className="mt-2 font-mono text-xs text-white/40">{phil.title}</p>
+                </button>
+              </Reveal>
             ))}
           </div>
-        </div>
 
-        {/* Philosopher Content Section */}
-        <div ref={contentRef}>
-          {selectedPhil && (
-            <div 
-              className="mt-16 border-4 bg-dark-800/95 p-8 backdrop-blur-sm"
-              style={{
-                borderColor: selectedPhil.glowColor,
-                boxShadow: `0 0 40px ${selectedPhil.glowColor}40`,
-                animation: 'fadeInUp 0.6s ease-out',
-              }}
-            >
-              {/* Close button */}
-              <button
-                onClick={() => setSelectedPhilosopher(null)}
-                className="float-right font-mono text-2xl text-neon-pink transition-all hover:text-terminal-amber hover:rotate-90"
-              >
-                ✕
-              </button>
-
-              {/* Philosopher Header */}
-              <div className="mb-8 flex items-center gap-6">
-                <span className="text-8xl">{selectedPhil.icon}</span>
-                <div>
-                  <h2
-                    className="font-mono text-4xl font-bold"
-                    style={{
-                      color: selectedPhil.glowColor,
-                    }}
-                  >
-                    {selectedPhil.name}
-                  </h2>
-                  <p
-                    className="font-mono text-xl font-bold text-terminal-green"
-                  >
-                    {selectedPhil.title}
-                  </p>
-                </div>
-              </div>
-
-              {/* Quote Display */}
-              <div 
-                className="mb-8 border-l-4 bg-dark-900/50 p-6"
-                style={{
-                  borderColor: selectedPhil.glowColor,
-                }}
-              >
-                <p className="font-mono text-xl leading-relaxed text-white">
-                  <span className="text-neon-cyan text-3xl">"</span>
-                  {selectedPhil.quotes[currentQuote]}
-                  <span className="text-neon-cyan text-3xl">"</span>
-                </p>
-                <button
-                  onClick={handleNextQuote}
-                  className="mt-4 font-mono text-sm text-terminal-amber transition-all hover:text-neon-cyan hover:translate-x-2"
-                >
-                  → Next roast ({currentQuote + 1}/{selectedPhil.quotes.length})
-                </button>
-              </div>
-
-              {/* Articles */}
-              <div>
-                <h3 className="mb-4 font-mono text-2xl font-bold text-terminal-green">
-                  📚 Teachings from this School:
-                </h3>
-                <div className="space-y-4">
-                  {selectedPhil.articles.map((article, i) => (
-                    <div
-                      key={i}
-                      className="border-2 border-terminal-green/30 bg-dark-900/50 p-4 transition-all hover:border-terminal-green hover:shadow-lg hover:shadow-terminal-green/20"
-                    >
-                      <h4 className="mb-2 font-mono text-xl font-bold text-terminal-green">
-                        {article.title}
-                      </h4>
-                      <p className="mb-3 font-mono text-sm text-terminal-green">
-                        {article.excerpt}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {article.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="border border-terminal-green/30 bg-terminal-green/5 px-2 py-1 font-mono text-xs text-terminal-green"
-                          >
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
+          <div ref={contentRef}>
+            {selected && (
+              <Reveal className="mt-16 border border-signal/40 bg-ink-900/60 p-8 md:p-10">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-5">
+                    <span className="text-5xl">{selected.icon}</span>
+                    <div>
+                      <h2 className="font-display text-3xl text-white">{selected.name}</h2>
+                      <p className="mt-1 font-mono text-sm text-signal/70">{selected.title}</p>
                     </div>
-                  ))}
+                  </div>
+                  <button
+                    onClick={() => setSelectedId(null)}
+                    aria-label="Close"
+                    className="font-mono text-lg text-white/40 transition-colors hover:text-signal"
+                  >
+                    ✕
+                  </button>
                 </div>
-              </div>
-            </div>
+
+                <div className="mt-8 border-l-2 border-signal/40 bg-ink-950/40 p-6">
+                  <p className="font-display text-xl italic leading-relaxed text-white/90 md:text-2xl">
+                    {selected.quotes[currentQuote]}
+                  </p>
+                  <button
+                    onClick={handleNextQuote}
+                    className="mt-4 font-mono text-xs text-signal/70 transition-all hover:translate-x-1 hover:text-signal"
+                  >
+                    Next roast ({currentQuote + 1}/{selected.quotes.length}) →
+                  </button>
+                </div>
+
+                <div className="mt-8">
+                  <p className="font-mono text-xs tracking-[0.2em] text-white/40">
+                    TEACHINGS FROM THIS SCHOOL
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {selected.articles.map((article, i) => (
+                      <div key={i} className="border border-line p-5">
+                        <h3 className="font-display text-lg text-white">{article.title}</h3>
+                        <p className="mt-1 font-sans text-sm text-white/50">{article.excerpt}</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {article.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="border border-line px-2 py-1 font-mono text-[11px] text-white/40"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Reveal>
+            )}
+          </div>
+
+          {!selected && (
+            <Reveal delay={0.2} className="mx-auto mt-16 max-w-2xl text-center">
+              <p className="font-display text-xl italic leading-relaxed text-white/70 md:text-2xl">
+                Each door leads to wisdom. Each wisdom leads to more questions. Each question
+                leads to, well, you get the idea.
+              </p>
+              <p className="mt-4 font-mono text-xs text-white/30">
+                The Anomaly Institute mission statement
+              </p>
+            </Reveal>
           )}
         </div>
-
-        {/* Bottom Quote */}
-        {!selectedPhilosopher && (
-          <div className="mt-16 border border-terminal-green/30 bg-dark-800/30 p-8 text-center">
-            <p className="font-mono text-lg text-terminal-green/90">
-              <span className="text-neon-cyan">"</span>
-              Each door leads to wisdom. Each wisdom leads to more questions.
-              Each question leads to... well, you get the idea.
-              <span className="text-neon-cyan">"</span>
-            </p>
-            <p className="mt-4 font-mono text-sm text-terminal-green/60">
-              — The Anomaly Institute Mission Statement
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
