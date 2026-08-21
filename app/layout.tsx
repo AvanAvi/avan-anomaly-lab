@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${plexMono.variable} ${inter.variable} ${instrumentSerif.variable} bg-dark-900 text-terminal-green antialiased`}
+        className={`${plexMono.variable} ${inter.variable} ${instrumentSerif.variable} bg-ink-950 text-terminal-green antialiased`}
       >
         <TransitionProvider>
           {children}
