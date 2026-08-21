@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Space_Mono, Inter } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { TransitionProvider } from "./transition-provider";
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
+const plexMono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   variable: "--font-mono",
 });
@@ -12,6 +12,13 @@ const spaceMono = Space_Mono({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+});
+
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-display",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${spaceMono.variable} ${inter.variable} bg-dark-900 text-terminal-green antialiased`}
+        className={`${plexMono.variable} ${inter.variable} ${instrumentSerif.variable} bg-dark-900 text-terminal-green antialiased`}
       >
         <TransitionProvider>
           {children}

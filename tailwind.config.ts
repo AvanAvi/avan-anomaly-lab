@@ -29,15 +29,35 @@ const config: Config = {
           purple: "#8338ec",
           cyan: "#00ffff",
         },
+        // Instrument design system: restrained, single-signal palette.
+        // Used by redesigned sections; legacy sections keep the tokens above
+        // until they are migrated.
+        ink: {
+          950: "#07090a",
+          900: "#0c0f11",
+          800: "#12161a",
+          700: "#1b2126",
+        },
+        line: {
+          DEFAULT: "#1e2529",
+          strong: "#2c363c",
+        },
+        signal: {
+          DEFAULT: "#6ee7c0",
+          dim: "#3a7d6b",
+          bright: "#9ffbdd",
+        },
       },
       fontFamily: {
         mono: ["var(--font-mono)", "monospace"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
       },
       animation: {
         "glitch": "glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite",
         "flicker": "flicker 0.15s infinite",
         "scan": "scan 8s linear infinite",
+        "drift": "drift 18s ease-in-out infinite",
       },
       keyframes: {
         glitch: {
@@ -55,6 +75,14 @@ const config: Config = {
           "0%": { transform: "translateY(-100%)" },
           "100%": { transform: "translateY(100vh)" },
         },
+        drift: {
+          "0%, 100%": { transform: "translate(0, 0)" },
+          "50%": { transform: "translate(var(--drift-x, 6px), var(--drift-y, -8px))" },
+        },
+      },
+      transitionTimingFunction: {
+        // Settling motion: fast approach, gentle arrival. No overshoot.
+        instrument: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },
