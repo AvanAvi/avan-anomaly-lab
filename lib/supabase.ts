@@ -64,20 +64,14 @@ export interface Submission {
 export type SubmissionInsert = Omit<Submission, 'id' | 'created_at' | 'status' | 'admin_notes' | 'is_spam'>;
 
 // ============================================
-// CLIENT-SIDE SUPABASE (limited permissions)
-// ============================================
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// ============================================
 // SERVER-SIDE SUPABASE (full permissions)
-// Use this only in API routes, never in client components
+// Use this only in API routes, never in client components.
+// Nothing in this app talks to Supabase from the browser, so there
+// is deliberately no client-side export here to accidentally misuse.
 // ============================================
 
 export const createServerSupabase = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient(supabaseUrl, serviceRoleKey, {
     auth: {
