@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetadataConsentModal from '@/components/ui/MetadataConsentModal';
+import FlightPathAnimation from '@/components/ui/FlightPathAnimation';
 
 // ============================================
 // TYPES
@@ -24,6 +25,10 @@ interface SubmissionResponse {
     country: string | null;
     source: 'gps' | 'ip';
   };
+  coords?: {
+    lat: number;
+    lng: number;
+  } | null;
   error?: string;
 }
 
@@ -969,8 +974,21 @@ export default function ContactSection() {
                 {successMessage}
               </p>
               
-              {/* Location info */}
-              {submissionResult?.location && (
+              {/* Flight Path Animation - Only show if GPS was used */}
+              {submissionResult?.location?.source === 'gps' && submissionResult?.coords && (
+                <FlightPathAnimation
+                  userLocation={{
+                    lat: submissionResult.coords.lat,
+                    lng: submissionResult.coords.lng,
+                    city: submissionResult.location.city,
+                    country: submissionResult.location.country,
+                  }}
+                  showAnimation={true}
+                />
+              )}
+
+              {/* Simple location info for IP-based */}
+              {submissionResult?.location && submissionResult?.location?.source !== 'gps' && (
                 <motion.div
                   className="mb-6 inline-block rounded-lg border border-terminal-green/20 bg-dark-900/50 px-4 py-2"
                   initial={{ opacity: 0, y: 10 }}
@@ -982,7 +1000,6 @@ export default function ContactSection() {
                     <span className="text-terminal-green">
                       {submissionResult.location.city || 'Unknown'}, {submissionResult.location.country || 'Unknown'}
                     </span>
-                    {' '}({submissionResult.location.source === 'gps' ? 'GPS' : 'IP'})
                   </p>
                 </motion.div>
               )}

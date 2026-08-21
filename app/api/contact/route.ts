@@ -430,6 +430,9 @@ export async function POST(request: NextRequest) {
         country: finalLocation.country,
         source: finalLocation.source,
       },
+      coords: payload.locationPrecise && payload.locationCoords 
+        ? { lat: payload.locationCoords.lat, lng: payload.locationCoords.lng }
+        : null,
     });
     
   } catch (err) {
