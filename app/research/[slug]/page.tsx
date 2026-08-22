@@ -45,7 +45,7 @@ export default function ResearchProjectPage() {
               </p>
               <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
             </div>
-            <h1 className="mt-4 font-display text-4xl text-white md:text-6xl">{project.title}</h1>
+            <h1 className="mt-4 font-display text-5xl text-white md:text-7xl">{project.title}</h1>
             <p className="mt-6 font-display text-xl italic leading-relaxed text-white/80 md:text-2xl">
               {project.thesis}
             </p>

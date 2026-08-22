@@ -778,9 +778,16 @@ export default function ContactSection() {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [placeholder] = useState(() =>
-    WITTY_PLACEHOLDERS[Math.floor(Math.random() * WITTY_PLACEHOLDERS.length)]
-  );
+  // Picked client-side only, after mount: choosing randomly during the
+  // initial render (server and client both run it, with different
+  // Math.random() results) throws a hydration mismatch on this
+  // textarea's placeholder attribute, since it is visible before any
+  // interaction. successMessage has no such constraint, it only
+  // renders after a real submission, entirely client-side already.
+  const [placeholder, setPlaceholder] = useState(WITTY_PLACEHOLDERS[0]);
+  useEffect(() => {
+    setPlaceholder(WITTY_PLACEHOLDERS[Math.floor(Math.random() * WITTY_PLACEHOLDERS.length)]);
+  }, []);
   const [successMessage] = useState(() =>
     SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)]
   );
