@@ -41,6 +41,10 @@ export default function SciencePage() {
             <h1 className="mt-4 font-display text-5xl text-white md:text-7xl">
               Where curiosity meets <span className="italic text-signal">questionable</span> experiments
             </h1>
+            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-white/50">
+              Long-form notes on systems, security, and physics that occasionally refuses to
+              behave. Most of it is still a draft.
+            </p>
           </Reveal>
 
           <Reveal delay={0.1}>

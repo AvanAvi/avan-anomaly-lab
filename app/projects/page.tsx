@@ -190,6 +190,9 @@ export default function ProjectsPage() {
             <h1 className="mt-4 font-display text-5xl text-white md:text-7xl">
               Where ideas become <span className="italic text-signal">code</span>
             </h1>
+            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-white/50">
+              A running log of builds, from shipped and stable to still catching fire.
+            </p>
           </Reveal>
 
           <Reveal delay={0.1}>

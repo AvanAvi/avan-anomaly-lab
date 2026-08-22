@@ -29,7 +29,7 @@ export default function Reveal({
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const prefersReducedMotion = useReducedMotion();
-  const MotionTag = motion(as) as typeof motion.div;
+  const MotionTag = motion.create(as) as typeof motion.div;
 
   if (prefersReducedMotion) {
     const Static = as as "div";
