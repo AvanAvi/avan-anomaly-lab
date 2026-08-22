@@ -8,9 +8,17 @@
 // inline RSC payload and font-face injection, still meaningfully
 // restricts everything else: no third-party script origins, no
 // framing, no plugin content.
+//
+// 'unsafe-eval' is added only in development: Next.js's dev-mode Fast
+// Refresh runtime evaluates code as a string, which a production-grade
+// script-src correctly blocks. Without this the entire app fails to
+// hydrate under `next dev` (every client component stays static), while
+// `next build && next start` was never affected. Production keeps the
+// stricter policy.
+const isDev = process.env.NODE_ENV !== 'production';
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
