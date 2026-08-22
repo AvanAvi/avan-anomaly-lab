@@ -7,6 +7,7 @@ import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
 import StatusBadge from "@/components/ui/StatusBadge";
 import ResearchDiagram from "@/components/research/ResearchDiagram";
+import ResponseForm from "@/components/research/ResponseForm";
 import { getProject, STATUS_COPY, THEME_LABEL } from "@/lib/research";
 
 export default function ResearchProjectPage() {
@@ -138,10 +139,13 @@ export default function ResearchProjectPage() {
             <div className="mt-14 border border-line-strong p-6 md:p-8">
               <p className="font-mono text-xs tracking-[0.2em] text-white/40">ADD A PERSPECTIVE</p>
               <p className="mt-3 max-w-xl font-sans text-sm leading-relaxed text-white/50">
-                Responses are not open yet on this page. If you have a counterargument, a
-                question this thesis should be asking, or a hole in the reasoning, the
-                contact section on the homepage reaches the same place in the meantime.
+                If you see a hole in this thinking, a question it should be asking, or a
+                genuinely different way to frame it, this is the place for it. Not a
+                comment section, and there is no promise of a reply.
               </p>
+              <div className="mt-6">
+                <ResponseForm projectSlug={project.slug} />
+              </div>
             </div>
           </Reveal>
         </div>
