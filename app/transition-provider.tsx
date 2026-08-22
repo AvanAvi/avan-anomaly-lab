@@ -8,8 +8,9 @@ const EMDriveTransition = lazy(() => import("@/components/effects/EMDriveTransit
 const PhilosophyTransition = lazy(() => import("@/components/effects/PhilosophyTransition"));
 const ReadingTransition = lazy(() => import("@/components/effects/ReadingTransition"));
 const ProjectsTransition = lazy(() => import("@/components/effects/ProjectsTransition"));
+const ResearchTransition = lazy(() => import("@/components/effects/ResearchTransition"));
 
-type TransitionType = 'science' | 'philosophy' | 'reading' | 'projects';
+type TransitionType = 'science' | 'philosophy' | 'reading' | 'projects' | 'research';
 
 interface TransitionContextType {
   startTransition: (destination: string, type?: TransitionType) => void;
@@ -76,6 +77,8 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         return <ReadingTransition {...props} />;
       case 'projects':
         return <ProjectsTransition {...props} />;
+      case 'research':
+        return <ResearchTransition {...props} />;
       case 'science':
       default:
         return <EMDriveTransition {...props} />;

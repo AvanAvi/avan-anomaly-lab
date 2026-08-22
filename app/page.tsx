@@ -4,6 +4,7 @@ import Hero from "@/components/sections/Hero";
 import About from "@/components/sections/About";
 import Writings from "@/components/sections/Writings";
 import Navbar from "@/components/layout/Navbar";
+import Research from "@/components/sections/Research";
 import Projects from "@/components/sections/Projects";
 import ContactSection from "@/components/sections/ContactSection";
 import FieldBackground from "@/components/effects/FieldBackground";
@@ -23,6 +24,9 @@ export default function Home() {
         </div>
         <div id="writings" className="scroll-mt-20">
           <Writings />
+        </div>
+        <div id="research" className="scroll-mt-20">
+          <Research />
         </div>
         <div id="projects" className="scroll-mt-20">
           <Projects />

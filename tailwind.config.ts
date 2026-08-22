@@ -59,8 +59,15 @@ const config: Config = {
         "flicker": "flicker 0.15s infinite",
         "scan": "scan 8s linear infinite",
         "drift": "drift 18s ease-in-out infinite",
+        // Draws an SVG stroke in from strokeDashoffset (set inline per path)
+        // down to 0. Used by the research diagrams; respects reduced motion
+        // via the motion-safe: variant at the call site, not here.
+        "draw": "draw 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
       keyframes: {
+        draw: {
+          to: { strokeDashoffset: "0" },
+        },
         glitch: {
           "0%, 100%": { transform: "translate(0)" },
           "20%": { transform: "translate(-2px, 2px)" },
