@@ -689,9 +689,12 @@ function SelfieCapture({
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative overflow-hidden border border-signal/30 bg-ink-900"
           >
-            <img 
-              src={capturedImage} 
-              alt="Your selfie" 
+            {/* A data: URL from the webcam canvas capture below, not a static
+                or remote asset, so next/image has nothing to optimize here. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={capturedImage}
+              alt="Your selfie"
               className="aspect-video w-full object-cover"
             />
             

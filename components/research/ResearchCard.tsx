@@ -21,7 +21,7 @@ export default function ResearchCard({ project }: { project: ResearchProject }) 
         <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
       </div>
 
-      <h3 className="font-display text-2xl text-white">{project.title}</h3>
+      <h2 className="font-display text-2xl text-white">{project.title}</h2>
 
       <p className="mt-3 flex-1 font-sans text-sm leading-relaxed text-white/50">{project.thesis}</p>
 

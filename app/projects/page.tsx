@@ -99,7 +99,7 @@ function ProjectCard({ project }: { project: Project }) {
   return (
     <div className="group flex h-full flex-col border border-line p-6 transition-colors duration-300 hover:border-signal/40">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <h3 className="font-display text-xl text-white">{project.title}</h3>
+        <h2 className="font-display text-xl text-white">{project.title}</h2>
         <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
       </div>
 

@@ -28,6 +28,19 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* Sitewide keyboard focus indicator, signal-colored to match the
+     instrument design system. :focus-visible only, so it never appears
+     on a mouse click, just Tab navigation. A handful of components
+     (ContactSection inputs, ResponseForm, Writings' card buttons) ship
+     their own bespoke focus treatment via focus-visible:outline-none and
+     are unaffected; everything else (SignalButton, BackLink, Navbar,
+     the research/project cards) had no focus indicator at all until
+     this rule. */
+  :focus-visible {
+    outline: 1.5px solid #6ee7c0;
+    outline-offset: 3px;
+  }
 }
 
 @layer utilities {

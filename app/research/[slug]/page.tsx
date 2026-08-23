@@ -65,7 +65,7 @@ export default function ResearchProjectPage() {
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 {project.keyIdeas.map((idea) => (
                   <div key={idea.label} className="border border-line p-5">
-                    <h3 className="font-display text-lg text-white">{idea.label}</h3>
+                    <h2 className="font-display text-lg text-white">{idea.label}</h2>
                     <p className="mt-2 font-sans text-sm leading-relaxed text-white/50">{idea.detail}</p>
                   </div>
                 ))}
@@ -120,7 +120,7 @@ export default function ResearchProjectPage() {
                 {project.writing.map((piece) => (
                   <div key={piece.title} className="border border-line p-5">
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="font-display text-lg text-white">{piece.title}</h3>
+                      <h2 className="font-display text-lg text-white">{piece.title}</h2>
                       {piece.penName && (
                         <span className="border border-signal/30 px-2 py-0.5 font-mono text-[10px] tracking-wide text-signal/60">
                           PEN NAME
