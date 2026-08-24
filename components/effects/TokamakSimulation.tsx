@@ -400,7 +400,10 @@ function Scene({
 
   return (
     <>
-      <color attach="background" args={["#050708"]} />
+      {/* No <color attach="background">: the canvas stays transparent so
+          the page's own field background (grid, drifting particles,
+          vignette) shows straight through, rather than the tokamak
+          sitting on its own painted rectangle. */}
       <ambientLight intensity={0.55} />
       <pointLight position={[3, 3, 3]} intensity={0.35} color={COLOR_SIGNAL_BRIGHT} />
       <pointLight position={[-3, -2, -2]} intensity={0.2} color={COLOR_SIGNAL} />
@@ -423,7 +426,7 @@ function Scene({
 /* ------------------------------------------------------------------ */
 function StaticFallback() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#050708]">
+    <div className="flex h-full w-full items-center justify-center">
       <svg viewBox="0 0 200 200" className="h-2/3 w-2/3 max-w-[280px]" aria-hidden="true">
         <ellipse cx="100" cy="100" rx="80" ry="34" fill="none" stroke="#293436" strokeWidth="1.5" />
         <ellipse cx="100" cy="100" rx="56" ry="22" fill="none" stroke="#6ee7c0" strokeWidth="1.5" opacity="0.6" />
@@ -507,7 +510,7 @@ export default function TokamakSimulation() {
           camera={{ position: [3.1, 1.85, 3.4], fov: 42 }}
           dpr={isCompact ? [1, 1.5] : [1, 2]}
           frameloop={active ? "always" : "never"}
-          gl={{ antialias: true, alpha: false }}
+          gl={{ antialias: true, alpha: true }}
           onCreated={({ gl }) => {
             // A lost context (GPU reset, too many concurrent WebGL
             // surfaces, a backgrounded mobile tab) should fall back to the
