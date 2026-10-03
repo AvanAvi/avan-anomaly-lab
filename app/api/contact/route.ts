@@ -3,7 +3,17 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
-import { clampString, estimateBase64Bytes, getClientIp, isRateLimited, isValidEmail } from '@/lib/security';
+import {
+  clampString,
+  estimateBase64Bytes,
+  getClientIp,
+  isRateLimited,
+  isValidEmail,
+  looksLikeJpeg,
+  looksLikeRecordedAudio,
+  PayloadTooLargeError,
+  readJsonBody,
+} from '@/lib/security';
 
 // ============================================
 // TYPES
@@ -70,13 +80,23 @@ function validatePayload(payload: Partial<ContactPayload>): string | null {
   if (payload.message.length > MAX_MESSAGE_LENGTH) {
     return 'Message is too long';
   }
-  if (payload.audioBase64 && estimateBase64Bytes(payload.audioBase64) > MAX_AUDIO_BYTES) {
-    return 'Audio recording is too large';
+  if (payload.audioBase64 != null) {
+    if (typeof payload.audioBase64 !== 'string' || !looksLikeRecordedAudio(payload.audioBase64)) {
+      return 'Invalid audio recording';
+    }
+    if (estimateBase64Bytes(payload.audioBase64) > MAX_AUDIO_BYTES) {
+      return 'Audio recording is too large';
+    }
   }
-  if (payload.imageBase64 && estimateBase64Bytes(payload.imageBase64) > MAX_IMAGE_BYTES) {
-    return 'Image is too large';
+  if (payload.imageBase64 != null) {
+    if (typeof payload.imageBase64 !== 'string' || !looksLikeJpeg(payload.imageBase64)) {
+      return 'Invalid image';
+    }
+    if (estimateBase64Bytes(payload.imageBase64) > MAX_IMAGE_BYTES) {
+      return 'Image is too large';
+    }
   }
-  if (payload.locationPrecise && payload.locationCoords && !isValidCoords(payload.locationCoords)) {
+  if (payload.locationCoords != null && !isValidCoords(payload.locationCoords)) {
     return 'Invalid location data';
   }
   return null;
@@ -316,14 +336,21 @@ async function reverseGeocode(lat: number, lng: number): Promise<{
 
 export async function POST(request: NextRequest) {
   try {
-    // Reject wildly oversized requests before parsing the body at all.
-    const contentLength = Number(request.headers.get('content-length') || 0);
-    if (contentLength > MAX_REQUEST_BYTES) {
-      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    // Reject oversized requests while reading, not after buffering.
+    let payload: Partial<ContactPayload>;
+    try {
+      payload = await readJsonBody<Partial<ContactPayload>>(request, MAX_REQUEST_BYTES);
+    } catch (err) {
+      if (err instanceof PayloadTooLargeError) {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+      }
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     const supabase = createServerSupabase();
-    const payload: Partial<ContactPayload> = await request.json();
 
     // Honeypot: a real visitor never fills this hidden field. Pretend
     // success rather than telling a bot its submission was rejected.
@@ -355,13 +382,24 @@ export async function POST(request: NextRequest) {
       language: clampString(payload.deviceInfo?.language, 20),
     };
 
+    // Only coordinates that passed validation are ever stored or echoed,
+    // and only when the visitor opted into precise location.
+    const locationCoords =
+      payload.locationPrecise && isValidCoords(payload.locationCoords)
+        ? { lat: payload.locationCoords.lat, lng: payload.locationCoords.lng, accuracy: payload.locationCoords.accuracy }
+        : null;
+    const timezoneOffset =
+      typeof payload.timezoneOffset === 'number' && Math.abs(payload.timezoneOffset) <= 24 * 60
+        ? Math.round(payload.timezoneOffset)
+        : null;
+
+    // Requests without a usable IP share one 'unknown' bucket instead of
+    // skipping the limit, so stripping the header is not a bypass.
     const ip = getClientIp(request) || 'unknown';
 
-    if (ip !== 'unknown') {
-      const limited = await isRateLimited(supabase, 'submissions', ip, { windowMinutes: 10, maxRequests: 5 });
-      if (limited) {
-        return NextResponse.json({ error: 'Too many submissions. Try again in a few minutes.' }, { status: 429 });
-      }
+    const limited = await isRateLimited(supabase, 'submissions', ip, { windowMinutes: 10, maxRequests: 5 });
+    if (limited) {
+      return NextResponse.json({ error: 'Too many submissions. Try again in a few minutes.' }, { status: 429 });
     }
 
     // ============================================
@@ -383,8 +421,10 @@ export async function POST(request: NextRequest) {
     // GET LOCATION DATA
     // ============================================
     
-    // Get IP-based geolocation
-    const ipGeo = await getIpGeoData(ip);
+    // Get IP-based geolocation (skipped when there is no real IP to look up)
+    const ipGeo = ip === 'unknown'
+      ? { city: null, region: null, country: null, countryCode: null, isVpn: false, isDatacenter: false, isp: null }
+      : await getIpGeoData(ip);
     
     // If GPS provided, reverse geocode to get location names
     let gpsLocation = {
@@ -394,15 +434,12 @@ export async function POST(request: NextRequest) {
       countryCode: null as string | null,
     };
     
-    if (payload.locationPrecise && payload.locationCoords) {
-      gpsLocation = await reverseGeocode(
-        payload.locationCoords.lat,
-        payload.locationCoords.lng
-      );
+    if (locationCoords) {
+      gpsLocation = await reverseGeocode(locationCoords.lat, locationCoords.lng);
     }
     
     // Determine final location (prefer GPS if available)
-    const finalLocation = payload.locationPrecise && gpsLocation.city
+    const finalLocation = locationCoords && gpsLocation.city
       ? {
           city: gpsLocation.city,
           region: gpsLocation.region,
@@ -452,8 +489,8 @@ export async function POST(request: NextRequest) {
         contact_social: contactSocial,
 
         // Location
-        location_precise: Boolean(payload.locationPrecise),
-        location_coords: payload.locationCoords ?? null,
+        location_precise: locationCoords !== null,
+        location_coords: locationCoords,
         location_city: finalLocation.city,
         location_region: finalLocation.region,
         location_country: finalLocation.country,
@@ -474,7 +511,7 @@ export async function POST(request: NextRequest) {
           language: deviceInfo.language,
         },
         timezone,
-        timezone_offset: typeof payload.timezoneOffset === 'number' ? payload.timezoneOffset : null,
+        timezone_offset: timezoneOffset,
         languages,
 
         // Trust Signals
@@ -504,9 +541,7 @@ export async function POST(request: NextRequest) {
         country: finalLocation.country,
         source: finalLocation.source,
       },
-      coords: payload.locationPrecise && payload.locationCoords 
-        ? { lat: payload.locationCoords.lat, lng: payload.locationCoords.lng }
-        : null,
+      coords: locationCoords ? { lat: locationCoords.lat, lng: locationCoords.lng } : null,
     });
     
   } catch (err) {

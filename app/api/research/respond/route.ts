@@ -5,7 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabase } from '@/lib/supabase';
-import { clampString, getClientIp, isRateLimited, isValidEmail } from '@/lib/security';
+import {
+  clampString,
+  getClientIp,
+  isRateLimited,
+  isValidEmail,
+  PayloadTooLargeError,
+  readJsonBody,
+} from '@/lib/security';
 import { PROJECTS } from '@/lib/research';
 
 interface ResponsePayload {
@@ -37,13 +44,20 @@ function validatePayload(payload: Partial<ResponsePayload>): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const contentLength = Number(request.headers.get('content-length') || 0);
-    if (contentLength > MAX_REQUEST_BYTES) {
-      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+    let payload: Partial<ResponsePayload>;
+    try {
+      payload = await readJsonBody<Partial<ResponsePayload>>(request, MAX_REQUEST_BYTES);
+    } catch (err) {
+      if (err instanceof PayloadTooLargeError) {
+        return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
+      }
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     const supabase = createServerSupabase();
-    const payload: Partial<ResponsePayload> = await request.json();
 
     // Honeypot: pretend success rather than telling a bot it was rejected.
     if (payload.honeypot) {
@@ -61,19 +75,19 @@ export async function POST(request: NextRequest) {
     const respondentEmailRaw = clampString(payload.respondentEmail, 254);
     const respondentEmail = respondentEmailRaw && isValidEmail(respondentEmailRaw) ? respondentEmailRaw : null;
 
+    // Requests without a usable IP share one 'unknown' bucket instead of
+    // skipping the limit, so stripping the header is not a bypass.
     const ip = getClientIp(request) || 'unknown';
 
-    if (ip !== 'unknown') {
-      const limited = await isRateLimited(supabase, 'research_responses', ip, {
-        windowMinutes: 15,
-        maxRequests: 3,
-      });
-      if (limited) {
-        return NextResponse.json(
-          { error: 'Too many perspectives from this connection. Try again later.' },
-          { status: 429 }
-        );
-      }
+    const limited = await isRateLimited(supabase, 'research_responses', ip, {
+      windowMinutes: 15,
+      maxRequests: 3,
+    });
+    if (limited) {
+      return NextResponse.json(
+        { error: 'Too many perspectives from this connection. Try again later.' },
+        { status: 429 }
+      );
     }
 
     const { data, error } = await supabase
