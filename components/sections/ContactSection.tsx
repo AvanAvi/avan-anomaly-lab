@@ -442,8 +442,8 @@ function SelfieCapture({
         reader.onloadend = () => resolve(reader.result as string);
         reader.readAsDataURL(blob);
       });
-    } catch (err) {
-      console.log('ImageCapture API failed, trying canvas fallback');
+    } catch {
+      // ImageCapture unavailable or failed; caller falls back to canvas.
       return null;
     }
   };

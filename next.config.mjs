@@ -35,12 +35,18 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  // Browsers ignore HSTS on plain-http localhost, so this is safe in dev.
+  // No includeSubDomains/preload: those are hard to undo and the final
+  // domain's subdomains are not known yet.
+  { key: 'Strict-Transport-Security', value: 'max-age=31536000' },
   // The contact form uses the camera, microphone, and geolocation itself
   // (with consent), so these are scoped to same-origin rather than disabled.
   { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self), interest-cohort=()' },
 ];
 
 const nextConfig = {
+  // Don't advertise the framework in every response.
+  poweredByHeader: false,
   async headers() {
     return [
       {
