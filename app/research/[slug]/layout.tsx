@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { getProject } from "@/lib/research";
+import { getProject, PROJECTS } from "@/lib/research";
 
 export function generateStaticParams() {
-  return [
-    { slug: "unconventional-propulsion" },
-    { slug: "minimum-viable-population" },
-    { slug: "resource-balancing" },
-  ];
+  return PROJECTS.map((project) => ({ slug: project.slug }));
 }
+
+// Only the projects listed in lib/research.ts exist; anything else 404s.
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
@@ -20,11 +19,24 @@ export async function generateMetadata({
     return { title: "Research" };
   }
 
+  const title = project.paper ? project.paper.shortTitle : project.title;
+  const description = project.paper ? project.paper.summary : project.thesis;
+
   return {
-    title: project.title,
-    description: project.thesis,
+    title,
+    description,
     alternates: {
       canonical: `/research/${project.slug}`,
+    },
+    openGraph: {
+      type: project.paper ? "article" : "website",
+      url: `/research/${project.slug}`,
+      title,
+      description,
+    },
+    twitter: {
+      title,
+      description,
     },
   };
 }

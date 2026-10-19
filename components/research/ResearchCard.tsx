@@ -4,7 +4,8 @@ import StatusBadge from "@/components/ui/StatusBadge";
 
 /**
  * The index card for one research project. Deliberately understated:
- * a theme, a thesis, a status, nothing that reads as a finished paper.
+ * a theme, a thesis, a status. A project with a working paper says so,
+ * but still not as a finished publication.
  */
 export default function ResearchCard({ project }: { project: ResearchProject }) {
   const status = STATUS_COPY[project.status];
@@ -25,8 +26,14 @@ export default function ResearchCard({ project }: { project: ResearchProject }) 
 
       <p className="mt-3 flex-1 font-sans text-sm leading-relaxed text-white/50">{project.thesis}</p>
 
+      {project.paper && (
+        <p className="mt-5 border-t border-line pt-4 font-mono text-[11px] leading-relaxed tracking-wide text-white/45">
+          {project.paper.kind.toUpperCase()} · {project.paper.date.toUpperCase()}
+        </p>
+      )}
+
       <p className="mt-6 font-mono text-xs text-signal/70 transition-all duration-300 group-hover:translate-x-1">
-        Enter the archive →
+        {project.paper ? "Read the paper →" : "Enter the archive →"}
       </p>
     </Link>
   );

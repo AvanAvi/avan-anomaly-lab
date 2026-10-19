@@ -3,6 +3,8 @@
 // needs (index cards, project pages, the diagram component) reads from
 // PROJECTS below, so a new project is one array entry, not a new page.
 
+import { HYPERSONIC_TPS_PAPER } from "@/lib/papers/hypersonic-tps";
+
 export type ResearchTheme = "propulsion" | "population" | "resources";
 
 export type ResearchStatus = "active" | "developing" | "dormant";
@@ -31,6 +33,25 @@ export interface KeyIdea {
   detail: string;
 }
 
+/**
+ * A written paper attached to a project. When present, the project page
+ * presents the paper itself instead of the generic thesis layout.
+ */
+export interface ResearchPaper {
+  title: string;
+  /** Used where the full title is too long, e.g. the index card. */
+  shortTitle: string;
+  subtitle?: string;
+  kind: string;
+  status: string;
+  date: string;
+  approach: string;
+  /** Two or three plain sentences, used on the research index. */
+  summary: string;
+  /** Path to a shareable PDF under /public. Leave unset until one exists. */
+  pdfUrl?: string;
+}
+
 export interface ResearchProject {
   slug: string;
   theme: ResearchTheme;
@@ -45,6 +66,7 @@ export interface ResearchProject {
   keyIdeas: KeyIdea[];
   writing: WritingPiece[];
   relatedExperiments?: string[];
+  paper?: ResearchPaper;
 }
 
 /**
@@ -62,11 +84,12 @@ export const PROJECTS: ResearchProject[] = [
     theme: "propulsion",
     title: "Unconventional Propulsion",
     thesis:
-      "Most propulsion work optimizes inside an accepted constraint set. This asks which of those constraints are physics, and which are just habit.",
+      "Could fusion-reactor materials protect an air-breathing vehicle at Mach 15 to 30? A corrected reanalysis finds the feasible envelope far narrower than first claimed.",
     abstract:
-      "A working framework for evaluating unconventional propulsion concepts, electromagnetic drives, exotic atmospheric flight regimes, and the rest, on energy accounting and materials science first, before engineering feasibility is even discussed. Most claims in this space die at the first law of thermodynamics. The interesting ones do not, and the framework exists to tell the difference quickly. Includes an ongoing thread on sustained flight above Mach 30 in atmosphere: not whether it is possible, but what has to be true about materials and thermal management for it to be possible at all.",
+      "A working framework for evaluating unconventional propulsion concepts, electromagnetic drives, exotic atmospheric flight regimes, and the rest, on energy accounting and materials science first, before engineering feasibility is even discussed. Most claims in this space die at the first law of thermodynamics. The interesting ones do not, and the framework exists to tell the difference quickly. Its most developed thread is the working paper above: what would have to be true about materials and thermal loads for sustained air-breathing flight far above Mach 10 to be possible at all.",
     status: "active",
-    statusNote: "Ongoing literature synthesis and first-principles energy modeling.",
+    statusNote: "V2 working paper drafted October 2026. Not yet submitted or peer reviewed.",
+    paper: HYPERSONIC_TPS_PAPER,
     questions: [
       "Where does an unconventional propulsion claim fail on energy accounting alone, before any engineering objection is needed?",
       "What is the actual thermal ceiling for sustained hypersonic flight: a materials problem, or a materials science problem we have not funded yet?",
