@@ -6,6 +6,7 @@ import { ResearchPaper, ResearchProject, STATUS_COPY, THEME_LABEL } from "@/lib/
 
 interface ContentsEntry {
   id: string;
+  index: string;
   label: string;
 }
 
@@ -106,14 +107,14 @@ export default function PaperView({
           <Reveal delay={0.25}>
             <nav aria-label="Paper contents" className="mt-12">
               <p className="font-mono text-xs tracking-[0.2em] text-white/40">CONTENTS</p>
-              <ol className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
-                {contents.map((c, i) => (
+              <ol className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
+                {contents.map((c) => (
                   <li key={c.id}>
                     <a
                       href={`#${c.id}`}
                       className="group inline-flex items-baseline gap-2 py-1 font-sans text-sm text-white/60 transition-colors hover:text-signal"
                     >
-                      <span className="font-mono text-[11px] text-signal/50">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="font-mono text-[11px] text-signal/50">{c.index}</span>
                       {c.label}
                     </a>
                   </li>
