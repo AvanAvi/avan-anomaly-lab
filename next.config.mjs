@@ -44,6 +44,11 @@ const securityHeaders = [
   { key: 'Permissions-Policy', value: 'camera=(self), microphone=(self), geolocation=(self), interest-cohort=()' },
 ];
 
+// Static interactive figures the site embeds in its own pages. These
+// may be framed by this origin only; everything else stays unframeable.
+const EMBEDDABLE_DEMOS = ['/research/unconventional-propulsion/hypersonic-cruiser.html'];
+const embedCsp = csp.replace("frame-ancestors 'none'", "frame-ancestors 'self'");
+
 const nextConfig = {
   // Don't advertise the framework in every response.
   poweredByHeader: false,
@@ -53,6 +58,14 @@ const nextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+      // Listed after the sitewide rule so these values win for the same keys.
+      ...EMBEDDABLE_DEMOS.map((source) => ({
+        source,
+        headers: [
+          { key: 'Content-Security-Policy', value: embedCsp },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      })),
     ];
   },
 };
