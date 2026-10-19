@@ -1,3 +1,4 @@
+import DemoEmbed from "@/components/research/paper/DemoEmbed";
 import Equation from "@/components/research/paper/Equation";
 import PaperFigure from "@/components/research/paper/PaperFigure";
 import PaperSection from "@/components/research/paper/PaperSection";
@@ -13,15 +14,18 @@ import { FIGURES, REFERENCES } from "@/lib/papers/hypersonic-tps";
  */
 
 export const CONTENTS = [
-  { id: "motivation", label: "Motivation" },
-  { id: "background", label: "Background" },
-  { id: "approach", label: "Approach" },
-  { id: "results", label: "Results" },
-  { id: "discussion", label: "Discussion" },
-  { id: "limitations", label: "Limitations" },
-  { id: "conclusion", label: "Conclusion" },
-  { id: "references", label: "References" },
+  { id: "demonstration", index: "00", label: "Demonstration" },
+  { id: "motivation", index: "01", label: "Motivation" },
+  { id: "background", index: "02", label: "Background" },
+  { id: "approach", index: "03", label: "Approach" },
+  { id: "results", index: "04", label: "Results" },
+  { id: "discussion", index: "05", label: "Discussion" },
+  { id: "limitations", index: "06", label: "Limitations" },
+  { id: "conclusion", index: "07", label: "Conclusion" },
+  { id: "references", index: "08", label: "References" },
 ];
+
+const DEMO_SRC = "/research/unconventional-propulsion/hypersonic-cruiser.html";
 
 export const AT_A_GLANCE = [
   {
@@ -190,6 +194,36 @@ const LIMITATIONS: { id: string; title: string; body: string; effect: string }[]
 export default function HypersonicTpsPaper() {
   return (
     <>
+      {/* 00 Interactive demonstration. Breaks out of the text column so the
+          drawing gets close to its native 1000 px width. */}
+      <PaperSection id="demonstration" index="00" title="Interactive demonstration">
+        <P>
+          The paper's model as a working instrument. Set the cruise Mach number with the slider, by dragging across the test cell, or with the arrow keys. The stagnation heat flux, the stress-limited tungsten thickness, the mass fractions, the range and the regime all update from the paper's equations, and the coupon on the bench changes thickness to match. Select a part name to highlight it in the drawing.
+        </P>
+        <div className="relative left-1/2 w-[min(72rem,calc(100vw-3rem))] -translate-x-1/2">
+          <div className="border border-line bg-ink-900/40">
+            <DemoEmbed
+              src={DEMO_SRC}
+              title="Interactive model of the V2 hypersonic cruiser in a free-jet test cell. Set the cruise Mach number from 8 to 30 to see heat flux, allowed armor thickness, mass fractions, range and feasibility regime."
+            />
+          </div>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+            <p className="max-w-3xl font-sans text-sm leading-relaxed text-white/50">
+              <span className="font-mono text-xs tracking-wide text-signal/70">DEMONSTRATION.</span> 
+              <RichText>{"An illustration of the model, not a vehicle design: the paper does no shape design, and the vehicle and test-cell geometry are drawn for explanation only. It runs a single case with $I_{sp}$ = 500 s and $L/D$ = 3.5 and a radiative share that ramps to 17.5% at Mach 30, so its readouts track the paper's nominal results closely (for example 3,304 km at Mach 25 against the paper's 3,312 km) but are not identical everywhere. The percentage shown is the paper's swept self-consistent share."}</RichText>
+            </p>
+            <a
+              href={DEMO_SRC}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 font-mono text-xs text-white/40 underline-offset-2 transition-colors hover:text-signal hover:underline"
+            >
+              Open full screen ↗
+            </a>
+          </div>
+        </div>
+      </PaperSection>
+
       {/* 01 Motivation */}
       <PaperSection id="motivation" index="01" title="Motivation and research question">
         <P>
