@@ -1,29 +1,49 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import "katex/dist/katex.min.css";
+import { notFound } from "next/navigation";
 import BackLink from "@/components/ui/BackLink";
 import FieldBackground from "@/components/effects/FieldBackground";
 import Reveal from "@/components/ui/Reveal";
 import StatusBadge from "@/components/ui/StatusBadge";
+import PaperView from "@/components/research/PaperView";
 import ResearchDiagram from "@/components/research/ResearchDiagram";
 import ResponseForm from "@/components/research/ResponseForm";
+import HypersonicTpsPaper, {
+  AT_A_GLANCE as HYPERSONIC_TPS_GLANCE,
+  CONTENTS as HYPERSONIC_TPS_CONTENTS,
+} from "@/components/research/papers/HypersonicTpsPaper";
 import { getProject, STATUS_COPY, THEME_LABEL } from "@/lib/research";
 
-export default function ResearchProjectPage() {
-  const params = useParams<{ slug: string }>();
+// Rendered on the server so paper equations are typeset at build time
+// and no math runtime ships to the browser. Interactive pieces (Reveal,
+// ResponseForm) are client components nested inside.
+
+/** Paper bodies keyed by project slug. */
+const PAPER_BODIES: Record<
+  string,
+  { Body: () => JSX.Element; contents: typeof HYPERSONIC_TPS_CONTENTS; glance: typeof HYPERSONIC_TPS_GLANCE }
+> = {
+  "unconventional-propulsion": {
+    Body: HypersonicTpsPaper,
+    contents: HYPERSONIC_TPS_CONTENTS,
+    glance: HYPERSONIC_TPS_GLANCE,
+  },
+};
+
+export default function ResearchProjectPage({ params }: { params: { slug: string } }) {
   const project = getProject(params.slug);
 
-  if (!project) {
+  if (!project) notFound();
+
+  const paperBody = project.paper ? PAPER_BODIES[project.slug] : undefined;
+
+  if (project.paper && paperBody) {
+    const { Body, contents, glance } = paperBody;
     return (
-      <div className="relative min-h-screen">
+      <div id="top" className="relative min-h-screen">
         <FieldBackground />
-        <div className="relative px-6 py-20 text-center md:px-12 lg:px-20">
-          <p className="font-mono text-sm text-white/40">No project at this address.</p>
-          <Link href="/research" className="mt-4 inline-block font-mono text-xs text-signal hover:underline">
-            Back to the archive
-          </Link>
-        </div>
+        <PaperView project={project} paper={project.paper} contents={contents} glance={glance}>
+          <Body />
+        </PaperView>
       </div>
     );
   }
@@ -34,7 +54,7 @@ export default function ResearchProjectPage() {
     <div className="relative min-h-screen">
       <FieldBackground />
       <div className="relative px-6 py-20 md:px-12 lg:px-20">
-        <BackLink label="Exit the archive" />
+        <BackLink label="Back to the archive" href="/research" />
 
         <div className="mx-auto max-w-4xl">
           {/* Overview */}
